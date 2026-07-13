@@ -1,74 +1,76 @@
-# 便捷边栏
+> [简体中文](https://github.com/CM-idea/Convenient-Sidebar/blob/main/README.CN.md)
 
-Chrome / Edge 浏览器侧边栏插件，提供快捷访问、网页嵌入浏览等能力。
+# Convenient Sidebar
 
-## 功能特性
+A Chrome / Edge browser side panel extension that provides quick access shortcuts and in-sidebar web page embedding.
 
-### 快捷访问管理
-- 支持添加常用网站到侧边栏工具栏（最多 7 个快捷槽位）和网格视图
-- 支持自定义站点图标，可自动抓取站点 favicon 或本地上传
-- 支持拖拽排序
-- 溢出快捷方式自动收纳至下拉菜单
+## Features
 
-### 侧边栏嵌入浏览
-- 在侧边栏内以 iframe 形式打开网页，无需离开当前页面
-- **突破 iframe 检测**：自动移除 `X-Frame-Options`、`Content-Security-Policy` 及 Cookie 同站限制（`SameSite`/`Secure`/`Partitioned`），绕过网站对 iframe 嵌入的拦截
-- 支持模拟移动端 User-Agent 访问（Android Chrome）
+### Quick Access Management
+- Add frequently used websites to the sidebar toolbar (up to 7 slots) and grid view
+- Custom site icons — auto-fetch favicon or upload locally
+- Drag-and-drop reordering
+- Overflow shortcuts are automatically tucked into a dropdown menu
 
-### 搜索引擎
-- 内置 Google、Bing、百度搜索
-- 支持自定义搜索 URL 模板
+### In-Sidebar Browsing
+- Open web pages inside the sidebar via iframe without leaving the current page
+- **Bypass iframe detection**: Automatically strips `X-Frame-Options`, `Content-Security-Policy`, and cookie same-site restrictions (`SameSite`/`Secure`/`Partitioned`) to circumvent iframe blocking
+- Optional mobile User-Agent simulation (Android Chrome)
 
-### 加载模式
-- **侧边栏加载**：在侧边栏内嵌框架中打开
-- **浏览器加载**：在新标签页中打开
+### Search Engine
+- Built-in Google, Bing, and Baidu search
+- Custom search URL template support
 
-### 启动页设置
-- 快捷访问主页
-- 自定义启动网址
+### Load Mode
+- **Sidebar mode**: Open pages in an embedded iframe within the sidebar
+- **Browser mode**: Open pages in a new tab
 
-### 工具栏图标
-- 亮色图标 / 暗色图标 / 自定义图标（支持上传本地图片）
+### Startup Page
+- Quick access home view
+- Custom startup URL
 
-## 安装
+### Toolbar Icon
+- Light / Dark / Custom icon (upload your own image)
+
+## Installation
 
 ### Chrome
-1. 打开 Chrome 浏览器，进入 `chrome://extensions/`
-2. 开启 **开发者模式**
-3. 点击 **加载已解压的扩展程序**，选择本插件所在目录
+1. Navigate to `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked** and select the extension directory
 
 ### Edge
-1. 打开 Edge 浏览器，进入 `edge://extensions/`
-2. 开启 **开发人员模式**
-3. 点击 **加载解压缩的扩展**，选择本插件所在目录
+1. Navigate to `edge://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked** and select the extension directory
 
-## 使用
+## Usage
 
-1. 点击工具栏插件图标打开侧边栏
-2. 点击工具栏上的 **+** 按钮或快捷访问网格中的 **添加** 按钮，从当前页面快速添加站点
-3. 点击快捷方式在侧边栏中打开，或右键在新标签页中打开
-4. 在设置页中自定义启动页、搜索引擎、图标主题等
+1. Click the extension toolbar icon to open the side panel
+2. Click the **+** button on the toolbar or the **Add** button in the grid to quickly add the current page
+3. Click a shortcut to open it in the sidebar
+4. Customize startup page, search engine, icon theme, etc. in the settings page
 
-## 项目结构
+## Project Structure
 
 ```
-便捷边栏/
-├── manifest.json          # 插件清单（Manifest V3）
-├── background.js          # Service Worker 后台脚本
-├── sidepanel.html         # 侧边栏入口页面
-├── sidepanel.js           # 侧边栏主逻辑（快捷访问、嵌入浏览）
-├── sidepanel.css          # 侧边栏样式
-├── options.html           # 设置页面
-├── options.js             # 设置页面逻辑
-├── options.css            # 设置页面样式
-├── viewer.html            # 独立页面查看器
-├── viewer.js              # 查看器逻辑
-├── frame-bypass.js        # iframe 嵌入 bypass（UA 模拟、Cookie 处理）
-├── embed-rules.js         # declarativeNetRequest 请求头规则
-├── icon-theme.js          # 工具栏图标主题管理
-├── icon-store.js          # 站点图标抓取与存储
-├── sidebar-home.js        # 主页快捷方式处理
-├── icons/                 # 图标资源
+convenient-sidebar/
+├── manifest.json          # Extension manifest (Manifest V3)
+├── background.js          # Service Worker background script
+├── sidepanel.html         # Side panel entry page
+├── sidepanel.js           # Side panel main logic (quick access, embedded browsing)
+├── sidepanel.css          # Side panel styles
+├── options.html           # Settings page
+├── options.js             # Settings page logic
+├── options.css            # Settings page styles
+├── viewer.html            # Standalone page viewer
+├── viewer.js              # Viewer logic
+├── frame-bypass.js        # iframe embedding bypass (UA spoofing, cookie handling)
+├── embed-rules.js         # declarativeNetRequest header modification rules
+├── icon-theme.js          # Toolbar icon theme management
+├── icon-store.js          # Site icon fetching and storage
+├── sidebar-home.js        # Home shortcut handling
+├── icons/                 # Icon assets
 │   ├── icon16.png
 │   ├── icon48.png
 │   ├── icon128.png
@@ -83,22 +85,22 @@ Chrome / Edge 浏览器侧边栏插件，提供快捷访问、网页嵌入浏览
 │   ├── down.svg
 │   └── ...
 └── scripts/
-    └── generate-icons.mjs # 图标生成脚本
+    └── generate-icons.mjs # Icon generation script
 ```
 
-## 技术栈
+## Tech Stack
 
-- **Manifest V3** — 最新扩展标准
-- **Service Worker** — 后台常驻脚本
-- **declarativeNetRequest** — 声明式网络请求修改（User-Agent、安全头移除）
-- **chrome.sidePanel** — 侧边栏 API
-- **chrome.storage** — 本地持久化存储
-- **Content Script (MAIN world)** — 在 iframe 中注入 UA 模拟与 Cookie 处理
+- **Manifest V3** — Latest extension specification
+- **Service Worker** — Background event-driven script
+- **declarativeNetRequest** — Declarative network request modification (User-Agent, security header removal)
+- **chrome.sidePanel** — Side panel API
+- **chrome.storage** — Local persistent storage
+- **Content Script (MAIN world)** — UA spoofing and cookie handling injected into iframes
 
-## 作者
+## Author
 
-- [刘已然](https://cheng.me/)
+- [Liu Yiran](https://cheng.me/)
 
-## 许可
+## License
 
 MIT
