@@ -103,4 +103,4 @@ convenient-sidebar/
 
 ## License
 
-MIT
+GPL
