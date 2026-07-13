@@ -12,7 +12,7 @@ Chrome / Edge 浏览器侧边栏插件，提供快捷访问、网页嵌入浏览
 
 ### 侧边栏嵌入浏览
 - 在侧边栏内以 iframe 形式打开网页，无需离开当前页面
-- 自动移除目标网站的 `X-Frame-Options` 与 `Content-Security-Policy` 头，突破嵌入限制
+- **突破 iframe 检测**：自动移除 `X-Frame-Options`、`Content-Security-Policy` 及 Cookie 同站限制（`SameSite`/`Secure`/`Partitioned`），绕过网站对 iframe 嵌入的拦截
 - 支持模拟移动端 User-Agent 访问（Android Chrome）
 
 ### 搜索引擎
