@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>便捷边栏</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <div class="sidebar">
+    <header class="toolbar" role="toolbar" aria-label="快捷操作">
+      <button class="toolbar-btn" type="button" data-slot="0" aria-label="快捷访问 1">
+        <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" type="button" data-slot="1" aria-label="快捷访问 2">
+        <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" type="button" data-slot="2" aria-label="快捷访问 3">
+        <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" type="button" data-slot="3" aria-label="快捷访问 4">
+        <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" type="button" data-slot="4" aria-label="快捷访问 5">
+        <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" type="button" data-slot="5" aria-label="快捷访问 6">
+        <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" type="button" data-slot="6" aria-label="快捷访问 7">
+        <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="toolbar-dropdown-wrap">
+        <button class="toolbar-btn toolbar-btn--dropdown" type="button" id="toolbar-dropdown-btn" aria-label="更多快捷访问" aria-haspopup="menu" aria-expanded="false">
+          <svg class="icon icon--chevron" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+            <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="toolbar-dropdown" id="toolbar-dropdown" hidden role="menu" aria-label="更多快捷访问"></div>
+    </header>
+
+    <main class="content" id="main-content">
+      <div class="home-view" id="home-view">
+        <div class="shortcuts-area">
+          <div class="shortcuts-grid" id="shortcuts-grid"></div>
+        </div>
+        <div class="search-area">
+          <input class="search-bar" id="search-input" type="search" placeholder="请输入搜索内容" aria-label="搜索" />
+        </div>
+      </div>
+      <div class="page-view" id="page-view" hidden>
+        <div class="page-loading" id="page-loading" hidden aria-live="polite" aria-busy="true">
+          <div class="page-loading__spinner" aria-hidden="true"></div>
+          <span class="page-loading__text">加载中…</span>
+        </div>
+        <div class="embed-fallback" id="embed-fallback" hidden>
+          <p class="embed-fallback__title">无法在侧边栏内打开此页面</p>
+          <p class="embed-fallback__desc" id="embed-fallback-desc">
+            该网站拒绝了侧边栏 iframe 的访问，请在主窗口中打开。
+          </p>
+          <button class="embed-fallback__btn" type="button" id="embed-fallback-open-tab">在主窗口打开</button>
+        </div>
+        <iframe
+          id="startup-frame"
+          class="startup-frame"
+          title="启动页面"
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads allow-modals allow-popups-to-escape-sandbox allow-presentation allow-storage-access-by-user-activation"
+          allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; geolocation; gyroscope; microphone; payment; usb; web-share"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </div>
+    </main>
+  </div>
+
+  <!-- 新增快捷访问弹窗 -->
+  <div class="modal-overlay" id="add-modal" hidden>
+    <div class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">站点图标</label>
+          <div class="icon-row">
+            <div class="icon-preview" id="icon-preview" title="点击可恢复站点默认图标">
+              <img id="icon-preview-img" alt="" hidden />
+            </div>
+            <label class="icon-upload" id="icon-upload" title="上传自定义图标">
+              <svg class="icon icon--plus-sm" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <input type="file" id="icon-file-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" hidden />
+            </label>
+            <span class="icon-hint" id="icon-hint">支持自定义图标，不上传则使用站点默认</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="site-title">站点标题</label>
+          <input class="form-input" id="site-title" type="text" placeholder="请输入站点标题" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="site-url">站点网址</label>
+          <input class="form-input" id="site-url" type="url" placeholder="请输入站点网址" />
+          <label class="form-check">
+            <input type="checkbox" id="site-mobile" />
+            <span>请求移动端访问</span>
+          </label>
+          <p class="form-hint">勾选后将模拟手机浏览器访问</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn--cancel" type="button" id="modal-cancel">取消</button>
+        <button class="btn btn--save" type="button" id="modal-save">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="icon-theme.js"></script>
+  <script src="icon-store.js"></script>
+  <script src="sidebar-home.js"></script>
+  <script src="embed-rules.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

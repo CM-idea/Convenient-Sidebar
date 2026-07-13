@@ -1,0 +1,620 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #ffffff;
+  --color-toolbar-bg: #f6f7f7;
+  --color-border: #dcdcde;
+  --color-icon: #b0b0b5;
+  --toolbar-height: 45px;
+  --icon-size: 24px;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--color-bg);
+  color: #1a1a1a;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+/* 顶部工具栏 — 8 个按钮均分填满整行 */
+.toolbar {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  flex-shrink: 0;
+  width: 100%;
+  height: var(--toolbar-height);
+  background: var(--color-toolbar-bg);
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--toolbar-height);
+  padding: 0;
+  border: none;
+  border-right: 1px solid #dcdcde;
+  border-bottom: 1px solid #dcdcde;
+  background: var(--color-bg);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.toolbar-btn:last-child {
+  border-right: none;
+}
+
+.toolbar-btn:hover {
+  background: #f0f0f2;
+}
+
+.toolbar-btn:active {
+  background: #e8e8ea;
+}
+
+.toolbar-btn:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: var(--color-icon);
+}
+
+.toolbar-btn__icon--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef0fb;
+  color: #3858e9;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.toolbar-btn__icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.toolbar-btn--filled .icon--plus {
+  display: none;
+}
+
+.toolbar-btn--active {
+  background: #eef0fb;
+}
+
+.toolbar-btn--active.toolbar-btn--filled {
+  box-shadow: inset 0 -2px 0 #3858e9;
+}
+
+.toolbar-dropdown__icon--home {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.toolbar-dropdown-wrap {
+  position: relative;
+}
+
+.toolbar-btn--dropdown-empty {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.toolbar-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #dcdcde;
+  border-top: none;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.toolbar-dropdown[hidden] {
+  display: none;
+}
+
+.toolbar-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid #f0f0f2;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  color: #555555;
+}
+
+.toolbar-dropdown__item:last-child {
+  border-bottom: none;
+}
+
+.toolbar-dropdown__item:hover {
+  background: #f6f7f7;
+}
+
+.toolbar-dropdown__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.toolbar-dropdown__icon--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #555555;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.toolbar-dropdown__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolbar-dropdown__empty {
+  padding: 12px;
+  font-size: 12px;
+  color: #999999;
+  text-align: center;
+}
+
+/* 主内容区 */
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-bg);
+  position: relative;
+}
+
+.home-view,
+.page-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.home-view[hidden],
+.page-view[hidden] {
+  display: none !important;
+}
+
+.shortcuts-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 19px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.search-area {
+  flex-shrink: 0;
+  padding: 0 19px 19px;
+}
+
+.search-bar {
+  width: 100%;
+  height: 42px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 20px;
+  background: #f6f7f7;
+  font-size: 12px;
+  color: #000000;
+  outline: none;
+}
+
+.search-bar::placeholder {
+  color: #999999;
+}
+
+.search-bar:focus {
+  box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.25);
+}
+
+.page-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #ffffff;
+}
+
+.page-loading[hidden] {
+  display: none !important;
+}
+
+.page-loading__spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e8e8ea;
+  border-top-color: #3858e9;
+  border-radius: 50%;
+  animation: page-loading-spin 0.8s linear infinite;
+}
+
+.page-loading__text {
+  font-size: 12px;
+  color: #666666;
+}
+
+@keyframes page-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.embed-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: #ffffff;
+}
+
+.embed-fallback[hidden] {
+  display: none !important;
+}
+
+.embed-fallback__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.embed-fallback__desc {
+  max-width: 280px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #666666;
+}
+
+.embed-fallback__btn {
+  margin-top: 4px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #3858e9;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.embed-fallback__btn:hover {
+  background: #2d47c7;
+}
+
+.startup-frame {
+  display: block;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: none;
+  background: #ffffff;
+}
+
+/* 快捷访问网格 — 整体居中，内部左对齐 */
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 55px);
+  gap: 10px 12px;
+  justify-content: start;
+  width: min(100%, 323px);
+}
+
+.shortcut-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 55px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.shortcut-item:active {
+  transform: scale(0.94);
+}
+
+.shortcut-item__icon {
+  width: 55px;
+  height: 55px;
+  border-radius: 15px;
+  background: #f6f7f7;
+  object-fit: contain;
+  padding: 8px;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.shortcut-item__icon--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #555555;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.shortcut-item__title {
+  width: 55px;
+  font-size: 10px;
+  color: #000000;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcut-item--add .shortcut-item__icon--add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #888888;
+}
+
+.shortcut-item--add .shortcut-item__icon--add svg {
+  width: 24px;
+  height: 24px;
+}
+
+.shortcut-item--add:hover .shortcut-item__icon--add {
+  background: #eef0fb;
+  color: #3858e9;
+}
+
+/* 弹窗遮罩 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  width: 100%;
+  max-width: 300px;
+  background: #ffffff;
+  border: 1px solid #dcdcde;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-label {
+  font-size: 12px;
+  color: #000000;
+  line-height: 15px;
+}
+
+.form-input {
+  width: 100%;
+  height: 35px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: #f6f7f7;
+  font-size: 12px;
+  color: #000000;
+  outline: none;
+}
+
+.form-input:focus {
+  box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.3);
+}
+
+.form-input::placeholder {
+  color: #999999;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #333333;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-check input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #3858e9;
+}
+
+.form-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #999999;
+  line-height: 1.4;
+}
+
+.icon-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-preview,
+.icon-upload {
+  flex-shrink: 0;
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  background: #f6f7f7;
+}
+
+.icon-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+}
+
+.icon-preview--custom {
+  cursor: pointer;
+}
+
+.icon-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.icon-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.icon-upload:hover {
+  background: #ececee;
+}
+
+.icon-upload:active {
+  opacity: 0.85;
+}
+
+.icon--plus-sm {
+  width: 21px;
+  height: 21px;
+  color: var(--color-icon);
+}
+
+.icon-hint {
+  font-size: 10px;
+  color: #dcdcde;
+  line-height: 13px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  height: 35px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+.btn--cancel {
+  background: #f6f7f7;
+  color: #555555;
+}
+
+.btn--save {
+  background: #ffffff;
+  color: #3858e9;
+  border: 1px solid #3858e9;
+}

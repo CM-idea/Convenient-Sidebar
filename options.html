@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>便捷边栏 - 设置</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="options-page">
+    <header class="options-header">
+      <div class="options-header__brand">
+        <img src="icons/plugin-icon.svg" alt="" class="options-header__logo" width="20" height="20" />
+        <span class="options-header__title">便捷边栏</span>
+      </div>
+    </header>
+
+    <div class="options-body">
+      <nav class="options-nav" aria-label="设置分类">
+        <div class="options-nav__items">
+          <button class="options-nav__item options-nav__item--active" type="button" data-tab="basic">
+            <svg class="options-nav__icon" viewBox="29 10 16 17" aria-hidden="true" fill="none">
+              <path d="M37 25.6667L43 22.6667L37 12.3333L31 22.6667L37 25.6667Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M37 25.6667V12.3333" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            基础设置
+          </button>
+          <button class="options-nav__item" type="button" data-tab="icon">
+            <svg class="options-nav__icon" viewBox="50 11 18 17" aria-hidden="true" fill="none">
+              <path d="M57.928 14.4573C56.2247 12.9375 54.215 12.3823 52.7527 13.2265C50.6801 14.4231 50.4923 17.9781 52.3333 21.1667C53.5436 23.2631 55.3295 24.6792 57 25.0633" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M56.086 16.8334C54.2451 20.022 54.4329 23.5769 56.5055 24.7735C58.5781 25.9701 61.7506 24.3553 63.5916 21.1667C65.4325 17.9781 65.2447 14.4231 63.1721 13.2265C61.0995 12.0299 57.927 13.6448 56.086 16.8334Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            图标设置
+          </button>
+          <button class="options-nav__item" type="button" data-tab="bookmark">
+            <svg class="options-nav__icon" viewBox="73 10 18 17" aria-hidden="true" fill="none">
+              <path d="M81 12.3333L84.3334 18H77.6667L81 12.3333Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M79.6667 20.6667H75V25.3334H79.6667V20.6667Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M85 25.6666C86.4727 25.6666 87.6666 24.4727 87.6666 23C87.6666 21.5272 86.4727 20.3333 85 20.3333C83.5272 20.3333 82.3333 21.5272 82.3333 23C82.3333 24.4727 83.5272 25.6666 85 25.6666Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            书签设置
+          </button>
+        </div>
+        <div class="options-nav__footer">
+          <a
+            class="options-nav__author"
+            href="https://cheng.me/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >@刘已然</a>
+          <span class="options-nav__version" id="options-version"></span>
+        </div>
+      </nav>
+
+      <main class="options-main">
+        <div class="options-panel" data-panel="basic">
+          <section class="options-section">
+            <div class="options-section__row">
+              <h3 class="options-section__label">启动页面</h3>
+              <div class="options-section__content">
+                <label class="options-option">
+                  <input type="radio" name="startup-page" value="quickAccess" checked />
+                  <span class="options-option__box">快捷访问</span>
+                </label>
+                <label class="options-option">
+                  <input type="radio" name="startup-page" value="custom" />
+                  <input class="options-option__input" id="startup-custom-url" type="text" placeholder="请输入自定义网址" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="options-section">
+            <div class="options-section__row">
+              <h3 class="options-section__label">加载方式</h3>
+              <div class="options-section__content">
+                <label class="options-option">
+                  <input type="radio" name="load-mode" value="sidebar" checked />
+                  <span class="options-option__box">侧边栏加载</span>
+                </label>
+                <label class="options-option">
+                  <input type="radio" name="load-mode" value="browser" />
+                  <span class="options-option__box">浏览器加载</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="options-section">
+            <div class="options-section__row">
+              <h3 class="options-section__label">搜索设置</h3>
+              <div class="options-section__content">
+                <label class="options-option">
+                  <input type="radio" name="search-engine" value="google" checked />
+                  <span class="options-option__box">谷歌搜索</span>
+                </label>
+                <label class="options-option">
+                  <input type="radio" name="search-engine" value="bing" />
+                  <span class="options-option__box">必应搜索</span>
+                </label>
+                <label class="options-option">
+                  <input type="radio" name="search-engine" value="baidu" />
+                  <span class="options-option__box">百度搜索</span>
+                </label>
+                <label class="options-option">
+                  <input type="radio" name="search-engine" value="custom" />
+                  <input class="options-option__input" id="search-custom-template" type="text" placeholder="请输入自定义搜索编码" />
+                </label>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="options-panel" data-panel="icon" hidden>
+          <section class="options-section">
+            <div class="options-section__row">
+              <h3 class="options-section__label options-section__label--wide">请选择边栏图标</h3>
+              <div class="options-section__content options-section__content--icon">
+                <div class="options-icon-option">
+                  <input type="radio" name="icon-theme" value="light" checked />
+                  <span class="options-icon-option__box options-icon-option__box--light">
+                    <img class="options-icon-preview" src="icons/plugin-icon-dark.svg" width="12" height="12" alt="" />
+                    亮色图标
+                  </span>
+                </div>
+                <div class="options-icon-option">
+                  <input type="radio" name="icon-theme" value="dark" />
+                  <span class="options-icon-option__box options-icon-option__box--dark">
+                    <img class="options-icon-preview" src="icons/plugin-icon.svg" width="12" height="12" alt="" />
+                    暗色图标
+                  </span>
+                </div>
+                <div class="options-icon-option">
+                  <input type="radio" name="icon-theme" value="custom" />
+                  <span class="options-icon-option__box options-icon-option__box--custom">
+                    <span class="options-icon-preview-wrap" id="icon-theme-custom-preview" title="点击上传自定义图标">
+                      <img class="options-icon-preview" id="icon-theme-custom-preview-img" alt="" hidden />
+                      <svg class="options-icon-preview__placeholder" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                        <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                    </span>
+                    <span
+                      class="options-icon-option__upload-text"
+                      id="icon-theme-custom-upload-text"
+                      title="点击上传自定义图标"
+                    >自定义图标（建议128×128px）</span>
+                  </span>
+                </div>
+                <input type="file" id="icon-theme-custom-file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" hidden />
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="options-panel" data-panel="bookmark" hidden>
+          <section class="options-section">
+            <div class="options-section__row options-section__row--bookmark">
+              <h3 class="options-section__label options-section__label--bookmark">快捷访问</h3>
+              <div class="bookmark-list" id="bookmark-list" aria-live="polite"></div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bookmark-edit-modal" hidden>
+    <div class="modal" role="dialog" aria-labelledby="bookmark-modal-title" aria-modal="true">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">站点图标</label>
+          <div class="icon-row">
+            <div class="icon-preview" id="bookmark-icon-preview" title="点击可恢复站点默认图标">
+              <img id="bookmark-icon-preview-img" alt="" hidden />
+            </div>
+            <label class="icon-upload" id="bookmark-icon-upload" title="上传自定义图标">
+              <svg class="icon icon--plus-sm" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <input type="file" id="bookmark-icon-file-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" hidden />
+            </label>
+            <span class="icon-hint" id="bookmark-icon-hint">支持自定义图标，不上传则使用站点默认</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="bookmark-modal-title">站点标题</label>
+          <input class="form-input" id="bookmark-modal-title" type="text" placeholder="请输入站点标题" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="bookmark-modal-url">站点网址</label>
+          <input class="form-input" id="bookmark-modal-url" type="url" placeholder="请输入站点网址" />
+          <label class="form-check">
+            <input type="checkbox" id="bookmark-modal-mobile" />
+            <span>请求移动端访问</span>
+          </label>
+          <p class="form-hint">勾选后将模拟手机浏览器访问</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn--cancel" type="button" id="bookmark-modal-cancel">取消</button>
+        <button class="btn btn--save" type="button" id="bookmark-modal-save">修改</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="icon-theme.js"></script>
+  <script src="icon-store.js"></script>
+  <script src="sidebar-home.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
