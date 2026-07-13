@@ -12,7 +12,7 @@ A Chrome / Edge browser side panel extension that provides quick access shortcut
 
 ### In-Sidebar Browsing
 - Open web pages inside the sidebar via iframe without leaving the current page
-- Automatically strip `X-Frame-Options` and `Content-Security-Policy` headers to bypass embedding restrictions
+- **Bypass iframe detection**: Automatically strips `X-Frame-Options`, `Content-Security-Policy`, and cookie same-site restrictions (`SameSite`/`Secure`/`Partitioned`) to circumvent iframe blocking
 - Optional mobile User-Agent simulation (Android Chrome)
 
 ### Search Engine
