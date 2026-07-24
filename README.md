@@ -40,9 +40,8 @@ A Chrome / Edge browser side panel extension that provides quick access shortcut
 3. Click **Load unpacked** and select the extension directory
 
 ### Edge
-1. Navigate to `edge://extensions/`
-2. Enable **Developer mode**
-3. Click **Load unpacked** and select the extension directory
+
+Available on the Edge Add-ons Store: <a href="https://microsoftedge.microsoft.com/addons/detail/%E4%BE%BF%E6%8D%B7%E8%BE%B9%E6%A0%8F/ljdhdniijekhmmanmpbipnbogolilcdo" target="_blank">Convenient Sidebar - Edge Add-ons</a>
 
 ## Usage
 

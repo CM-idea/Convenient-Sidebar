@@ -37,10 +37,9 @@ Chrome / Edge 浏览器侧边栏插件，提供快捷访问、网页嵌入浏览
 2. 开启 **开发者模式**
 3. 点击 **加载已解压的扩展程序**，选择本插件所在目录
 
-### Edge
-1. 打开 Edge 浏览器，进入 `edge://extensions/`
-2. 开启 **开发人员模式**
-3. 点击 **加载解压缩的扩展**，选择本插件所在目录
+### Edge 商店一键安装
+
+已上传 Edge 商店，可直接一键安装：<a href="https://microsoftedge.microsoft.com/addons/detail/%E4%BE%BF%E6%8D%B7%E8%BE%B9%E6%A0%8F/ljdhdniijekhmmanmpbipnbogolilcdo" target="_blank">便捷边栏 - Edge 商店</a>
 
 ## 使用
 
