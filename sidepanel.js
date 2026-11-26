@@ -36,11 +36,18 @@ const embedFallbackOpenTab = document.getElementById('embed-fallback-open-tab');
 const searchInput = document.getElementById('search-input');
 const dropdownBtn = document.getElementById('toolbar-dropdown-btn');
 const dropdownMenu = document.getElementById('toolbar-dropdown');
-const slotButtons = document.querySelectorAll('.toolbar-btn[data-slot]');
+const toolbar = document.querySelector('.toolbar');
+const dropdownWrap = document.querySelector('.toolbar-dropdown-wrap');
+const slotButtons = [...document.querySelectorAll('.toolbar-btn[data-slot]')];
 
 let activeSlotIndex = null;
 let currentIconUrl = '';
 let hasCustomIcon = false;
+let visibleSlotCount = slotButtons.length;
+let renderedShortcuts = [];
+let deleteMode = false;
+let draggedShortcut = null;
+let suppressOpenUntil = 0;
 
 function setModalIconPreview(iconUrl) {
   currentIconUrl = iconUrl || '';
@@ -386,6 +393,76 @@ function normalizeShortcutOrder(shortcuts) {
   });
 }
 
+function sameShortcut(a, b) {
+  return Boolean(a && b && a.id === b.id && a.url === b.url && a.createdAt === b.createdAt);
+}
+
+function syncToolbarCapacity() {
+  const width = toolbar.getBoundingClientRect().width;
+  if (!width) return;
+  const count = Math.max(1, Math.floor(width / 76) - 1);
+
+  while (slotButtons.length < count) {
+    const btn = document.createElement('button');
+    btn.className = 'toolbar-btn';
+    btn.type = 'button';
+    btn.dataset.slot = String(slotButtons.length);
+    btn.setAttribute('aria-label', `快捷访问 ${slotButtons.length + 1}`);
+    btn.innerHTML = '<svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    toolbar.insertBefore(btn, dropdownWrap);
+    bindSlotButton(btn);
+    slotButtons.push(btn);
+  }
+
+  visibleSlotCount = count;
+  slotButtons.forEach((btn, index) => { btn.hidden = index >= count; });
+  toolbar.style.setProperty('--toolbar-columns', String(count + 1));
+}
+
+function clearDragState() {
+  draggedShortcut = null;
+  document.querySelectorAll('.shortcut--dragging, .shortcut--drag-over').forEach((el) => {
+    el.classList.remove('shortcut--dragging', 'shortcut--drag-over');
+  });
+}
+
+function startShortcutDrag(event, shortcut) {
+  if (deleteMode) { event.preventDefault(); return; }
+  draggedShortcut = shortcut;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', String(shortcut.id || shortcut.url));
+  event.currentTarget.classList.add('shortcut--dragging');
+  closeDropdown();
+}
+
+function allowShortcutDrop(event, target) {
+  if (!draggedShortcut || !target || sameShortcut(draggedShortcut, target)) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  event.currentTarget.classList.add('shortcut--drag-over');
+}
+
+async function moveShortcut(source, target) {
+  const sorted = getValidShortcuts(await loadShortcuts());
+  const from = sorted.findIndex((item) => sameShortcut(item, source));
+  const to = sorted.findIndex((item) => sameShortcut(item, target));
+  if (from < 0 || to < 0 || from === to) return;
+  const [item] = sorted.splice(from, 1);
+  sorted.splice(to, 0, item);
+  await saveShortcuts(normalizeShortcutOrder(sorted));
+  updateActiveToolbarSlot(-1);
+  await refreshUI();
+}
+
+function dropShortcut(event, target) {
+  if (!draggedShortcut || !target || sameShortcut(draggedShortcut, target)) return;
+  event.preventDefault();
+  suppressOpenUntil = Date.now() + 350;
+  const source = draggedShortcut;
+  clearDragState();
+  void moveShortcut(source, target);
+}
+
 function updateActiveToolbarSlot(slotIndex) {
   slotButtons.forEach((btn) => {
     btn.classList.toggle('toolbar-btn--active', Number(btn.dataset.slot) === slotIndex);
@@ -463,7 +540,8 @@ function renderToolbarSlot(btn, shortcut) {
   if (shortcut) {
     btn.classList.add('toolbar-btn--filled');
     btn.setAttribute('aria-label', shortcut.title);
-    btn.title = SidebarHome.isHomeUrl(shortcut.url) ? shortcut.title : `${shortcut.title}（右键删除）`;
+    btn.title = `${shortcut.title}（拖动排序）`;
+    btn.draggable = true;
 
     const iconUrl = resolveShortcutIcon(shortcut);
     if (iconUrl) {
@@ -481,6 +559,7 @@ function renderToolbarSlot(btn, shortcut) {
     btn.classList.remove('toolbar-btn--filled');
     btn.setAttribute('aria-label', `快捷访问 ${Number(btn.dataset.slot) + 1}`);
     btn.title = '添加快捷访问';
+    btn.draggable = false;
     if (plusIcon) plusIcon.style.display = '';
   }
 }
@@ -498,7 +577,7 @@ function openDropdown() {
 function renderDropdownMenu(shortcuts) {
   dropdownMenu.innerHTML = '';
 
-  const overflowItems = getValidShortcuts(shortcuts).slice(TOOLBAR_SLOT_COUNT);
+  const overflowItems = getValidShortcuts(shortcuts).slice(visibleSlotCount);
 
   if (overflowItems.length === 0) {
     closeDropdown();
@@ -518,10 +597,6 @@ function renderDropdownMenu(shortcuts) {
       })
     );
   });
-}
-
-function areToolbarSlotsFull(shortcuts) {
-  return getValidShortcuts(shortcuts).length >= TOOLBAR_SLOT_COUNT;
 }
 
 function createGridAddButton() {
@@ -546,6 +621,34 @@ function createGridAddButton() {
     handleGridAddClick();
   });
 
+  return btn;
+}
+
+function createGridDeleteButton() {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = `shortcut-item shortcut-item--manage${deleteMode ? ' shortcut-item--manage-active' : ''}`;
+  btn.title = deleteMode ? '退出删除模式' : '进入删除模式';
+  btn.setAttribute('aria-label', btn.title);
+  btn.setAttribute('aria-pressed', String(deleteMode));
+
+  const icon = document.createElement('div');
+  icon.className = 'shortcut-item__icon shortcut-item__icon--manage';
+  icon.innerHTML = deleteMode
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="M5 12L10 17L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="M5 7H19M9 7V5H15V7M7 7L8 20H16L17 7M10 10V17M14 10V17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  btn.appendChild(icon);
+
+  const title = document.createElement('span');
+  title.className = 'shortcut-item__title';
+  title.textContent = deleteMode ? '退出' : '删除';
+  btn.appendChild(title);
+  btn.addEventListener('click', () => {
+    deleteMode = !deleteMode;
+    if (deleteMode) closeDropdown();
+    renderShortcutsGrid(renderedShortcuts);
+    shortcutsGrid.querySelector('.shortcut-item--manage')?.focus();
+  });
   return btn;
 }
 
@@ -576,6 +679,11 @@ function renderShortcutsGrid(shortcuts) {
     link.type = 'button';
     link.className = 'shortcut-item__link';
     link.title = item.title;
+    link.draggable = !deleteMode;
+    link.addEventListener('dragstart', (event) => startShortcutDrag(event, item));
+    card.addEventListener('dragover', (event) => allowShortcutDrop(event, item));
+    card.addEventListener('dragleave', () => card.classList.remove('shortcut--drag-over'));
+    card.addEventListener('drop', (event) => dropShortcut(event, item));
 
     const iconUrl = resolveShortcutIcon(item);
     if (iconUrl) {
@@ -596,7 +704,11 @@ function renderShortcutsGrid(shortcuts) {
     title.className = 'shortcut-item__title';
     title.textContent = item.title;
     link.appendChild(title);
-    link.addEventListener('click', () => openUrl(item.url, { requestMobile: item.requestMobile }));
+    link.addEventListener('click', () => {
+      if (!deleteMode && Date.now() > suppressOpenUntil) {
+        openUrl(item.url, { requestMobile: item.requestMobile });
+      }
+    });
     card.appendChild(link);
 
     const removeBtn = document.createElement('button');
@@ -604,19 +716,18 @@ function renderShortcutsGrid(shortcuts) {
     removeBtn.className = 'shortcut-item__remove';
     removeBtn.title = `删除 ${item.title}`;
     removeBtn.setAttribute('aria-label', `删除 ${item.title}`);
+    removeBtn.hidden = !deleteMode;
     removeBtn.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true" fill="none"><path d="M6 6L14 14M14 6L6 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
     removeBtn.addEventListener('click', () => removeShortcut(item));
     card.appendChild(removeBtn);
     shortcutsGrid.appendChild(card);
   });
 
-  if (areToolbarSlotsFull(shortcuts)) {
-    shortcutsGrid.appendChild(createGridAddButton());
-  }
+  shortcutsGrid.appendChild(createGridDeleteButton());
+  if (!deleteMode) shortcutsGrid.appendChild(createGridAddButton());
 }
 
 async function removeShortcut(shortcut) {
-  if (!confirm(`确定删除“${shortcut.title}”吗？`)) return;
   const sorted = getValidShortcuts(await loadShortcuts());
   const index = sorted.findIndex((item) =>
     item.id === shortcut.id && item.url === shortcut.url && item.title === shortcut.title
@@ -630,9 +741,12 @@ async function removeShortcut(shortcut) {
 }
 
 function renderUI(shortcuts) {
+  syncToolbarCapacity();
   const sorted = getValidShortcuts(shortcuts);
+  renderedShortcuts = sorted;
 
   slotButtons.forEach((btn) => {
+    if (btn.hidden) return;
     const slotIndex = Number(btn.dataset.slot);
     renderToolbarSlot(btn, sorted[slotIndex]);
   });
@@ -720,7 +834,7 @@ async function handleSave() {
     await refreshUI();
 
     const newIndex = normalized.findIndex((item) => item.id === entry.id);
-    if (newIndex >= 0 && newIndex < TOOLBAR_SLOT_COUNT) {
+    if (newIndex >= 0 && newIndex < visibleSlotCount) {
       updateActiveToolbarSlot(newIndex);
     }
 
@@ -732,24 +846,33 @@ async function handleSave() {
   }
 }
 
-slotButtons.forEach((btn) => {
+function bindSlotButton(btn) {
   btn.addEventListener('click', () => {
+    if (deleteMode || Date.now() <= suppressOpenUntil) return;
     closeDropdown();
     handleSlotClick(Number(btn.dataset.slot));
   });
-  btn.addEventListener('contextmenu', async (event) => {
-    if (!btn.classList.contains('toolbar-btn--filled')) return;
-    event.preventDefault();
-    const sorted = getValidShortcuts(await loadShortcuts());
-    const shortcut = sorted[Number(btn.dataset.slot)];
-    if (!shortcut || SidebarHome.isHomeUrl(shortcut.url)) return;
-    closeDropdown();
-    await removeShortcut(shortcut);
+  btn.addEventListener('dragstart', (event) => {
+    const shortcut = renderedShortcuts[Number(btn.dataset.slot)];
+    if (!shortcut) { event.preventDefault(); return; }
+    startShortcutDrag(event, shortcut);
   });
-});
+  btn.addEventListener('dragover', (event) => {
+    allowShortcutDrop(event, renderedShortcuts[Number(btn.dataset.slot)]);
+  });
+  btn.addEventListener('dragleave', () => btn.classList.remove('shortcut--drag-over'));
+  btn.addEventListener('drop', (event) => {
+    dropShortcut(event, renderedShortcuts[Number(btn.dataset.slot)]);
+  });
+}
+
+slotButtons.forEach(bindSlotButton);
+document.addEventListener('dragend', clearDragState);
+new ResizeObserver(() => { if (!draggedShortcut) void refreshUI(); }).observe(toolbar);
 
 dropdownBtn.addEventListener('click', (event) => {
   event.stopPropagation();
+  if (deleteMode) return;
   if (dropdownBtn.classList.contains('toolbar-btn--dropdown-empty')) return;
 
   if (dropdownMenu.hidden) {
@@ -791,6 +914,9 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     if (!modalOverlay.hidden) {
       closeModal();
+    } else if (deleteMode) {
+      deleteMode = false;
+      renderShortcutsGrid(renderedShortcuts);
     } else if (!dropdownMenu.hidden) {
       closeDropdown();
     }
