@@ -819,3 +819,28 @@ body {
   color: #3858e9;
   border: 1px solid #3858e9;
 }
+
+/* The native side panel keeps Edge's title bar; the floating wrapper owns its own bar. */
+.display-mode-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  min-height: 36px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-size: 12px;
+}
+.display-mode-bar button {
+  border: 0;
+  border-radius: 5px;
+  padding: 5px 8px;
+  color: #1466b8;
+  background: #eff6ff;
+  cursor: pointer;
+}
+.display-mode-bar button:hover { background: #dbeafe; }
+.display-mode-bar button:disabled { opacity: .55; cursor: wait; }
+body.floating-view .display-mode-bar { display: none; }

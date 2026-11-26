@@ -1,6 +1,6 @@
-importScripts('icon-theme.js', 'embed-rules.js');
+importScripts('icon-theme.js', 'embed-rules.js', 'floating-background.js');
 
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+initFloatingPanelBehavior();
 
 const SETTINGS_KEY = 'settings';
 

@@ -1,4 +1,6 @@
 const STORAGE_KEY = 'shortcuts';
+const floatingView = new URLSearchParams(location.search).has('floating');
+document.body.classList.toggle('floating-view', floatingView);
 const SETTINGS_KEY = 'settings';
 
 const DEFAULT_SETTINGS = {
@@ -1058,6 +1060,19 @@ document.addEventListener('click', (event) => {
 embedFallbackOpenTab.addEventListener('click', () => {
   if (embedFallbackUrl) {
     navigateToUrl(embedFallbackUrl);
+  }
+});
+
+document.getElementById('float-mode-button').addEventListener('click', async () => {
+  const button = document.getElementById('float-mode-button');
+  button.disabled = true;
+  try {
+    const result = await chrome.runtime.sendMessage({ type: 'FLOATING_FROM_DOCK' });
+    if (!result?.ok) throw new Error(result?.error || '无法打开悬浮边栏');
+  } catch (error) {
+    window.alert(error.message || '悬浮边栏暂不可用');
+  } finally {
+    button.disabled = false;
   }
 });
 

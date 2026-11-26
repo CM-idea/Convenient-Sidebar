@@ -498,7 +498,11 @@ function showBackupStatus(message, isError = false) {
 
 document.getElementById('backup-export').addEventListener('click', async () => {
   try {
-    const data = SidebarBackup.create(await loadSettings(), await loadShortcuts());
+    const presentation = await chrome.storage.local.get(['panelDisplayMode', 'floatingWidth']);
+    const data = SidebarBackup.create(await loadSettings(), await loadShortcuts(), {
+      mode: presentation.panelDisplayMode,
+      width: presentation.floatingWidth,
+    });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -521,13 +525,17 @@ backupFileInput.addEventListener('change', async () => {
   if (!file) return;
   try {
     if (file.size > 20 * 1024 * 1024) throw new Error('备份文件不能超过 20 MB。');
-    const { settings, shortcuts } = SidebarBackup.parse(await file.text(), DEFAULT_SETTINGS);
+    const { settings, shortcuts, display } = SidebarBackup.parse(await file.text(), DEFAULT_SETTINGS);
     if (!window.confirm(`导入将覆盖当前设置和快捷访问，确定导入 ${shortcuts.length} 个项目吗？`)) return;
 
     clearTimeout(bookmarkSaveTimer);
     bookmarkSaveTimer = null;
     const normalized = normalizeShortcutOrder(shortcuts);
-    await chrome.storage.local.set({ [SETTINGS_KEY]: settings, [SHORTCUTS_KEY]: normalized });
+    await chrome.storage.local.set({
+      [SETTINGS_KEY]: settings,
+      [SHORTCUTS_KEY]: normalized,
+      ...(display ? { panelDisplayMode: display.mode, floatingWidth: display.width } : {}),
+    });
     applySettingsToForm(settings);
     bookmarkRows = buildBookmarkRowsFromStorage(normalized);
     renderBookmarkList();

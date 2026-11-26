@@ -9,7 +9,7 @@
     "128": "icons/icon-dark128.png"
   },
   "action": {
-    "default_title": "打开侧边栏",
+    "default_title": "打开侧边栏或悬浮边栏",
     "default_icon": {
       "16": "icons/icon-dark16.png",
       "48": "icons/icon-dark48.png",
@@ -26,7 +26,18 @@
   "side_panel": {
     "default_path": "sidepanel.html"
   },
-  "content_scripts": [],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "floating-content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
   "permissions": [
     "sidePanel",
     "activeTab",
@@ -35,5 +46,18 @@
     "scripting",
     "declarativeNetRequestWithHostAccess"
   ],
-  "host_permissions": ["<all_urls>"]
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "sidepanel.html"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ]
+    }
+  ]
 }

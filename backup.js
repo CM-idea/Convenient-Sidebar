@@ -2,7 +2,7 @@ const SidebarBackup = {
   FORMAT: 'convenient-sidebar-backup',
   VERSION: 1,
 
-  create(settings, shortcuts) {
+  create(settings, shortcuts, display = {}) {
     const { shortcuts: protectedShortcuts } = SidebarHome.ensureDefaultShortcuts(shortcuts);
     return {
       format: this.FORMAT,
@@ -10,6 +10,10 @@ const SidebarBackup = {
       exportedAt: new Date().toISOString(),
       settings,
       shortcuts: protectedShortcuts,
+      display: {
+        mode: display.mode === 'floating' ? 'floating' : 'docked',
+        width: Number.isFinite(display.width) ? Math.max(280, Math.min(850, display.width)) : 420,
+      },
     };
   },
 
@@ -67,7 +71,14 @@ const SidebarBackup = {
       };
     });
 
-    return { settings, shortcuts: SidebarHome.ensureDefaultShortcuts(shortcuts).shortcuts };
+    const display = data.display && typeof data.display === 'object' && !Array.isArray(data.display)
+      ? {
+          mode: data.display.mode === 'floating' ? 'floating' : 'docked',
+          width: Number.isFinite(data.display.width)
+            ? Math.max(280, Math.min(850, data.display.width)) : 420,
+        }
+      : null; // Previous backups keep the current display preference.
+    return { settings, shortcuts: SidebarHome.ensureDefaultShortcuts(shortcuts).shortcuts, display };
   },
 
   safeImage(value) {
