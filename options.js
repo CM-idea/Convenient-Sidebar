@@ -35,6 +35,8 @@ const optionsVersionEl = document.getElementById('options-version');
 const iconThemeCustomFileInput = document.getElementById('icon-theme-custom-file');
 const iconThemeCustomPreviewImg = document.getElementById('icon-theme-custom-preview-img');
 const iconThemeCustomPreview = document.getElementById('icon-theme-custom-preview');
+const backupFileInput = document.getElementById('backup-file');
+const backupStatus = document.getElementById('backup-status');
 
 if (optionsVersionEl) {
   optionsVersionEl.textContent = `V ${chrome.runtime.getManifest().version}`;
@@ -284,6 +286,14 @@ async function handleBookmarkModalSave() {
     }
   }
 
+  if (SidebarHome.isHomeUrl(normalizedUrl)) {
+    const current = bookmarkRows[editingBookmarkIndex];
+    if (bookmarkModalMode === 'add' || !SidebarHome.isHomeUrl(current?.url)) {
+      window.alert('主页已存在，无需重复添加。');
+      return;
+    }
+  }
+
   bookmarkModalSave.disabled = true;
 
   try {
@@ -481,6 +491,55 @@ loadSettings().then(async (settings) => {
 });
 initBookmarkSettings();
 
+function showBackupStatus(message, isError = false) {
+  backupStatus.textContent = message;
+  backupStatus.style.color = isError ? '#b42318' : '#267049';
+}
+
+document.getElementById('backup-export').addEventListener('click', async () => {
+  try {
+    const data = SidebarBackup.create(await loadSettings(), await loadShortcuts());
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `convenient-sidebar-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    showBackupStatus('备份已导出。');
+  } catch (error) {
+    showBackupStatus(`导出失败：${error.message}`, true);
+  }
+});
+
+document.getElementById('backup-import').addEventListener('click', () => backupFileInput.click());
+backupFileInput.addEventListener('change', async () => {
+  const file = backupFileInput.files?.[0];
+  backupFileInput.value = '';
+  if (!file) return;
+  try {
+    if (file.size > 20 * 1024 * 1024) throw new Error('备份文件不能超过 20 MB。');
+    const { settings, shortcuts } = SidebarBackup.parse(await file.text(), DEFAULT_SETTINGS);
+    if (!window.confirm(`导入将覆盖当前设置和快捷访问，确定导入 ${shortcuts.length} 个项目吗？`)) return;
+
+    clearTimeout(bookmarkSaveTimer);
+    bookmarkSaveTimer = null;
+    const normalized = normalizeShortcutOrder(shortcuts);
+    await chrome.storage.local.set({ [SETTINGS_KEY]: settings, [SHORTCUTS_KEY]: normalized });
+    applySettingsToForm(settings);
+    bookmarkRows = buildBookmarkRowsFromStorage(normalized);
+    renderBookmarkList();
+    try { await applyToolbarIconSettings(settings); } catch (error) {
+      console.warn('导入后更新扩展图标失败:', error);
+    }
+    showBackupStatus(`导入成功，已恢复 ${normalized.length} 个项目。`);
+  } catch (error) {
+    showBackupStatus(`导入失败：${error.message}`, true);
+  }
+});
+
 function resolveBookmarkIcon(row) {
   if (SidebarHome.isHomeUrl(row?.url)) {
     return SidebarHome.getIconUrl();
@@ -620,7 +679,8 @@ async function persistQuickAccessRows(rows) {
   const filledRows = rows.filter((row) => row.url.trim());
   const withIcons = await enrichBookmarkRowsWithLocalIcons(filledRows);
   bookmarkRows = withIcons;
-  await saveShortcuts(normalizeShortcutOrder(serializeBookmarkRows(withIcons)));
+  const { shortcuts } = SidebarHome.ensureDefaultShortcuts(serializeBookmarkRows(withIcons));
+  await saveShortcuts(normalizeShortcutOrder(shortcuts));
 }
 
 function scheduleBookmarkSave() {
@@ -658,8 +718,9 @@ function renderBookmarkList() {
   visibleRows.forEach((row, index) => {
     const sourceIndex = bookmarkRows.indexOf(row);
     const isLast = index === visibleRows.length - 1;
+    const isHome = SidebarHome.isHomeUrl(row.url);
     const rowEl = document.createElement('div');
-    rowEl.className = 'bookmark-row';
+    rowEl.className = `bookmark-row${isHome ? ' bookmark-row--home' : ''}`;
     rowEl.dataset.index = String(index);
 
     const mainEl = document.createElement('div');
@@ -682,11 +743,11 @@ function renderBookmarkList() {
 
     const iconEl = document.createElement('div');
     iconEl.className = 'bookmark-row__icon';
-    iconEl.title = '点击修改图标';
+    iconEl.title = isHome ? '主页固定图标' : '点击修改图标';
     renderBookmarkIconCell(iconEl, row);
     iconEl.addEventListener('click', (event) => {
       event.stopPropagation();
-      openBookmarkEditModal(sourceIndex);
+      if (!isHome) openBookmarkEditModal(sourceIndex);
     });
 
     const titleInput = document.createElement('input');
@@ -694,6 +755,7 @@ function renderBookmarkList() {
     titleInput.type = 'text';
     titleInput.placeholder = '请输入标题';
     titleInput.value = row.title;
+    titleInput.readOnly = isHome;
     titleInput.addEventListener('mousedown', () => {
       canDragRow = false;
     });
@@ -710,6 +772,7 @@ function renderBookmarkList() {
     urlInput.type = 'text';
     urlInput.placeholder = '请输入网址';
     urlInput.value = SidebarHome.formatUrlForDisplay(row.url);
+    urlInput.readOnly = isHome;
     urlInput.addEventListener('mousedown', () => {
       canDragRow = false;
     });
@@ -764,17 +827,25 @@ function renderBookmarkList() {
     const actionsEl = document.createElement('div');
     actionsEl.className = 'bookmark-row__actions';
 
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'bookmark-row__remove';
-    removeBtn.type = 'button';
-    removeBtn.setAttribute('aria-label', '删除快捷访问');
-    removeBtn.innerHTML = CLOSE_ICON_SVG;
-    removeBtn.addEventListener('click', async () => {
-      bookmarkRows.splice(sourceIndex, 1);
-      renderBookmarkList();
-      await persistQuickAccessRows(bookmarkRows);
-    });
-    actionsEl.appendChild(removeBtn);
+    if (isHome) {
+      const fixed = document.createElement('span');
+      fixed.className = 'bookmark-row__fixed';
+      fixed.textContent = '固定';
+      fixed.title = '主页不能删除';
+      actionsEl.appendChild(fixed);
+    } else {
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'bookmark-row__remove';
+      removeBtn.type = 'button';
+      removeBtn.setAttribute('aria-label', '删除快捷访问');
+      removeBtn.innerHTML = CLOSE_ICON_SVG;
+      removeBtn.addEventListener('click', async () => {
+        bookmarkRows.splice(sourceIndex, 1);
+        renderBookmarkList();
+        await persistQuickAccessRows(bookmarkRows);
+      });
+      actionsEl.appendChild(removeBtn);
+    }
 
     if (isLast) {
       actionsEl.appendChild(createBookmarkAddButton());
@@ -867,10 +938,16 @@ async function initBookmarkSettings() {
 
   const migrated = await IconStore.migrateShortcutIcons(shortcuts);
   if (migrated.changed) {
-    await saveShortcuts(normalizeShortcutOrder(migrated.shortcuts));
-    shortcuts = migrated.shortcuts;
+    const latest = await loadShortcuts();
+    shortcuts = latest.map((item) => {
+      const index = shortcuts.findIndex((old) => old.id === item.id && old.url === item.url);
+      if (index < 0 || item.iconUrl !== shortcuts[index].iconUrl) return item;
+      return { ...item, iconUrl: migrated.shortcuts[index].iconUrl };
+    });
+    await saveShortcuts(normalizeShortcutOrder(shortcuts));
   }
 
+  shortcuts = await loadShortcuts();
   bookmarkRows = buildBookmarkRowsFromStorage(shortcuts);
   renderBookmarkList();
 

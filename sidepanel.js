@@ -34,6 +34,9 @@ const pageLoading = document.getElementById('page-loading');
 const embedFallback = document.getElementById('embed-fallback');
 const embedFallbackOpenTab = document.getElementById('embed-fallback-open-tab');
 const searchInput = document.getElementById('search-input');
+const searchEngineButton = document.getElementById('search-engine-button');
+const searchEngineBadge = document.getElementById('search-engine-badge');
+const searchEngineMenu = document.getElementById('search-engine-menu');
 const dropdownBtn = document.getElementById('toolbar-dropdown-btn');
 const dropdownMenu = document.getElementById('toolbar-dropdown');
 const toolbar = document.querySelector('.toolbar');
@@ -48,6 +51,30 @@ let renderedShortcuts = [];
 let deleteMode = false;
 let draggedShortcut = null;
 let suppressOpenUntil = 0;
+
+const SEARCH_ENGINES = {
+  google: { label: '谷歌搜索', glyph: 'G' },
+  bing: { label: '必应搜索', glyph: 'b' },
+  baidu: { label: '百度搜索', glyph: '度' },
+  custom: { label: '自定义搜索', glyph: '⌕' },
+};
+
+function renderSearchEngine(settings) {
+  const engine = SEARCH_ENGINES[settings.searchEngine] ? settings.searchEngine : 'google';
+  searchEngineBadge.className = `search-engine-badge search-engine-badge--${engine}`;
+  searchEngineBadge.textContent = SEARCH_ENGINES[engine].glyph;
+  searchEngineButton.title = `当前：${SEARCH_ENGINES[engine].label}，点击切换`;
+  searchEngineButton.setAttribute('aria-label', searchEngineButton.title);
+  searchEngineMenu.querySelectorAll('[data-engine]').forEach((item) => {
+    item.setAttribute('aria-checked', String(item.dataset.engine === engine));
+    item.disabled = item.dataset.engine === 'custom' && !settings.searchCustomTemplate?.includes('%s');
+  });
+}
+
+function closeSearchEngineMenu() {
+  searchEngineMenu.hidden = true;
+  searchEngineButton.setAttribute('aria-expanded', 'false');
+}
 
 function setModalIconPreview(iconUrl) {
   currentIconUrl = iconUrl || '';
@@ -756,7 +783,12 @@ function renderUI(shortcuts) {
 }
 
 async function refreshUI() {
-  renderUI(await loadShortcuts());
+  const { shortcuts: migrated, changed: homeChanged } =
+    SidebarHome.migrateShortcuts(await loadShortcuts());
+  const { shortcuts, changed: defaultChanged } = SidebarHome.ensureDefaultShortcuts(migrated);
+  const normalized = normalizeShortcutOrder(shortcuts);
+  renderUI(normalized);
+  if (homeChanged || defaultChanged) await saveShortcuts(normalized);
 }
 
 async function migrateLegacyShortcutIcons(shortcuts) {
@@ -917,6 +949,9 @@ document.addEventListener('keydown', (event) => {
     } else if (deleteMode) {
       deleteMode = false;
       renderShortcutsGrid(renderedShortcuts);
+    } else if (!searchEngineMenu.hidden) {
+      closeSearchEngineMenu();
+      searchEngineButton.focus();
     } else if (!dropdownMenu.hidden) {
       closeDropdown();
     }
@@ -952,6 +987,7 @@ async function registerSidebarEmbedContext(url, requestMobile = false) {
 async function init() {
   const { settings, shortcuts } = await loadAppState();
   currentSettings = settings;
+  renderSearchEngine(settings);
 
   const { shortcuts: homeMigrated, changed: homeChanged } = migrateHomeShortcuts(shortcuts);
   const { shortcuts: withDefault, changed: defaultChanged } =
@@ -997,6 +1033,28 @@ searchInput.addEventListener('keydown', (event) => {
   }
 });
 
+searchEngineButton.addEventListener('click', (event) => {
+  event.stopPropagation();
+  searchEngineMenu.hidden = !searchEngineMenu.hidden;
+  searchEngineButton.setAttribute('aria-expanded', String(!searchEngineMenu.hidden));
+});
+
+searchEngineMenu.addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-engine]');
+  if (!button || button.disabled) return;
+  event.stopPropagation();
+  const settings = { ...currentSettings, searchEngine: button.dataset.engine };
+  currentSettings = settings;
+  renderSearchEngine(settings);
+  closeSearchEngineMenu();
+  searchInput.focus();
+  await chrome.storage.local.set({ [SETTINGS_KEY]: settings });
+});
+
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.search-box')) closeSearchEngineMenu();
+});
+
 embedFallbackOpenTab.addEventListener('click', () => {
   if (embedFallbackUrl) {
     navigateToUrl(embedFallbackUrl);
@@ -1010,7 +1068,13 @@ chrome.storage.onChanged.addListener((changes, area) => {
     refreshUI();
   }
   if (area === 'local' && changes[SETTINGS_KEY]) {
+    const previous = currentSettings;
     currentSettings = { ...DEFAULT_SETTINGS, ...(changes[SETTINGS_KEY].newValue || {}) };
-    applyStartupView(currentSettings).catch(() => {});
+    renderSearchEngine(currentSettings);
+    if (previous.startupPage !== currentSettings.startupPage ||
+        previous.startupCustomUrl !== currentSettings.startupCustomUrl ||
+        previous.loadMode !== currentSettings.loadMode) {
+      applyStartupView(currentSettings).catch(() => {});
+    }
   }
 });

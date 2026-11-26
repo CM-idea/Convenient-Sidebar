@@ -40,6 +40,12 @@
             </svg>
             书签设置
           </button>
+          <button class="options-nav__item" type="button" data-tab="backup">
+            <svg class="options-nav__icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+              <path d="M4 6H20V20H4V6ZM8 3H16M8 11H16M12 8V15M9 12L12 15L15 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            数据备份
+          </button>
         </div>
         <div class="options-nav__footer">
           <a
@@ -161,6 +167,18 @@
             </div>
           </section>
         </div>
+        <div class="options-panel" data-panel="backup" hidden>
+          <section class="options-section backup-section">
+            <h3>导入与导出</h3>
+            <p>备份包含快捷访问、站点图标和全部设置。导入会覆盖当前数据。</p>
+            <div class="backup-actions">
+              <button class="backup-button" id="backup-export" type="button">导出 JSON 备份</button>
+              <button class="backup-button backup-button--secondary" id="backup-import" type="button">导入 JSON 备份</button>
+              <input id="backup-file" type="file" accept=".json,application/json" hidden />
+            </div>
+            <p class="backup-status" id="backup-status" role="status" aria-live="polite"></p>
+          </section>
+        </div>
       </main>
     </div>
   </div>
@@ -211,6 +229,7 @@
   <script src="icon-theme.js"></script>
   <script src="icon-store.js"></script>
   <script src="sidebar-home.js"></script>
+  <script src="backup.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

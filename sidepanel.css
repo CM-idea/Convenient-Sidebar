@@ -269,13 +269,99 @@ body {
   padding: 0 19px 19px;
 }
 
-.search-bar {
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
   height: 42px;
-  padding: 0 16px;
+  border-radius: 22px;
+  background: #f6f7f7;
+}
+
+.search-box:focus-within {
+  box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.25);
+}
+
+.search-engine-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 0 0 52px;
+  height: 32px;
+  margin-left: 5px;
+  border: 0;
+  border-right: 1px solid #dcdcde;
+  background: transparent;
+  cursor: pointer;
+  color: #7b8795;
+}
+
+.search-engine-button svg { width: 10px; height: 10px; }
+.search-engine-button:focus-visible { outline: 2px solid #2563eb; border-radius: 14px; }
+
+.search-engine-badge {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.search-engine-badge--google { color: #4285f4; }
+.search-engine-badge--bing { color: #007da8; }
+.search-engine-badge--baidu { color: #315efb; }
+.search-engine-badge--custom { color: #667085; }
+
+.search-engine-menu {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: 164px;
+  padding: 5px;
+  border: 1px solid #e2e5e9;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+}
+
+.search-engine-menu[hidden] { display: none; }
+
+.search-engine-menu button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 34px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.search-engine-menu button:hover,
+.search-engine-menu button[aria-checked="true"] { background: #eaf2ff; }
+.search-engine-menu button:disabled { color: #a5acb6; cursor: not-allowed; }
+
+.search-bar {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 16px 0 8px;
   border: none;
   border-radius: 20px;
-  background: #f6f7f7;
+  background: transparent;
   font-size: 12px;
   color: #000000;
   outline: none;
@@ -286,7 +372,7 @@ body {
 }
 
 .search-bar:focus {
-  box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.25);
+  box-shadow: none;
 }
 
 .page-loading {

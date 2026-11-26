@@ -460,6 +460,46 @@ body {
   height: 24px;
 }
 
+.bookmark-row__fixed {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: #778598;
+  font-size: 11px;
+}
+
+.bookmark-row--home input[readonly] {
+  color: #667085;
+  cursor: default;
+}
+
+.backup-section {
+  max-width: 520px;
+  padding: 12px 0;
+}
+
+.backup-section h3 { font-size: 16px; font-weight: 600; }
+.backup-section p { margin-top: 10px; color: #667085; font-size: 12px; line-height: 1.6; }
+.backup-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+
+.backup-button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.backup-button:hover { background: #1d4ed8; }
+.backup-button--secondary { background: #fff; color: #1d4ed8; }
+.backup-button--secondary:hover { background: #eaf2ff; }
+.backup-button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.backup-status { min-height: 18px; }
+
 .bookmark-row--add-only {
   justify-content: flex-end;
 }

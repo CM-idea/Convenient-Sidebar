@@ -67,7 +67,19 @@
           <div class="shortcuts-grid" id="shortcuts-grid"></div>
         </div>
         <div class="search-area">
-          <input class="search-bar" id="search-input" type="search" placeholder="请输入搜索内容" aria-label="搜索" />
+          <div class="search-box">
+            <button class="search-engine-button" id="search-engine-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="切换搜索引擎">
+              <span class="search-engine-badge" id="search-engine-badge" aria-hidden="true">G</span>
+              <svg viewBox="0 0 12 12" aria-hidden="true" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <input class="search-bar" id="search-input" type="search" placeholder="请输入搜索内容" aria-label="搜索" />
+            <div class="search-engine-menu" id="search-engine-menu" hidden role="menu" aria-label="选择搜索引擎">
+              <button type="button" role="menuitemradio" data-engine="google"><span class="search-engine-badge search-engine-badge--google" aria-hidden="true">G</span>谷歌搜索</button>
+              <button type="button" role="menuitemradio" data-engine="bing"><span class="search-engine-badge search-engine-badge--bing" aria-hidden="true">b</span>必应搜索</button>
+              <button type="button" role="menuitemradio" data-engine="baidu"><span class="search-engine-badge search-engine-badge--baidu" aria-hidden="true">度</span>百度搜索</button>
+              <button type="button" role="menuitemradio" data-engine="custom"><span class="search-engine-badge search-engine-badge--custom" aria-hidden="true">⌕</span>自定义搜索</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="page-view" id="page-view" hidden>
