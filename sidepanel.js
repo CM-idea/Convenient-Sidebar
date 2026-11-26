@@ -463,6 +463,7 @@ function renderToolbarSlot(btn, shortcut) {
   if (shortcut) {
     btn.classList.add('toolbar-btn--filled');
     btn.setAttribute('aria-label', shortcut.title);
+    btn.title = SidebarHome.isHomeUrl(shortcut.url) ? shortcut.title : `${shortcut.title}（右键删除）`;
 
     const iconUrl = resolveShortcutIcon(shortcut);
     if (iconUrl) {
@@ -479,6 +480,7 @@ function renderToolbarSlot(btn, shortcut) {
   } else {
     btn.classList.remove('toolbar-btn--filled');
     btn.setAttribute('aria-label', `快捷访问 ${Number(btn.dataset.slot) + 1}`);
+    btn.title = '添加快捷访问';
     if (plusIcon) plusIcon.style.display = '';
   }
 }
@@ -568,10 +570,12 @@ function renderShortcutsGrid(shortcuts) {
   const items = getGridShortcuts(shortcuts);
 
   items.forEach((item) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'shortcut-item';
-    btn.title = item.title;
+    const card = document.createElement('div');
+    card.className = 'shortcut-item';
+    const link = document.createElement('button');
+    link.type = 'button';
+    link.className = 'shortcut-item__link';
+    link.title = item.title;
 
     const iconUrl = resolveShortcutIcon(item);
     if (iconUrl) {
@@ -580,26 +584,49 @@ function renderShortcutsGrid(shortcuts) {
       img.src = iconUrl;
       img.alt = '';
       img.draggable = false;
-      btn.appendChild(img);
+      link.appendChild(img);
     } else {
       const fallback = document.createElement('div');
       fallback.className = 'shortcut-item__icon shortcut-item__icon--fallback';
       fallback.textContent = item.title.charAt(0).toUpperCase();
-      btn.appendChild(fallback);
+      link.appendChild(fallback);
     }
 
     const title = document.createElement('span');
     title.className = 'shortcut-item__title';
     title.textContent = item.title;
-    btn.appendChild(title);
+    link.appendChild(title);
+    link.addEventListener('click', () => openUrl(item.url, { requestMobile: item.requestMobile }));
+    card.appendChild(link);
 
-    btn.addEventListener('click', () => openUrl(item.url, { requestMobile: item.requestMobile }));
-    shortcutsGrid.appendChild(btn);
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'shortcut-item__remove';
+    removeBtn.title = `删除 ${item.title}`;
+    removeBtn.setAttribute('aria-label', `删除 ${item.title}`);
+    removeBtn.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true" fill="none"><path d="M6 6L14 14M14 6L6 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    removeBtn.addEventListener('click', () => removeShortcut(item));
+    card.appendChild(removeBtn);
+    shortcutsGrid.appendChild(card);
   });
 
   if (areToolbarSlotsFull(shortcuts)) {
     shortcutsGrid.appendChild(createGridAddButton());
   }
+}
+
+async function removeShortcut(shortcut) {
+  if (!confirm(`确定删除“${shortcut.title}”吗？`)) return;
+  const sorted = getValidShortcuts(await loadShortcuts());
+  const index = sorted.findIndex((item) =>
+    item.id === shortcut.id && item.url === shortcut.url && item.title === shortcut.title
+  );
+  if (index < 0) return;
+
+  sorted.splice(index, 1);
+  await saveShortcuts(normalizeShortcutOrder(sorted));
+  updateActiveToolbarSlot(-1);
+  await refreshUI();
 }
 
 function renderUI(shortcuts) {
@@ -710,6 +737,15 @@ slotButtons.forEach((btn) => {
     closeDropdown();
     handleSlotClick(Number(btn.dataset.slot));
   });
+  btn.addEventListener('contextmenu', async (event) => {
+    if (!btn.classList.contains('toolbar-btn--filled')) return;
+    event.preventDefault();
+    const sorted = getValidShortcuts(await loadShortcuts());
+    const shortcut = sorted[Number(btn.dataset.slot)];
+    if (!shortcut || SidebarHome.isHomeUrl(shortcut.url)) return;
+    closeDropdown();
+    await removeShortcut(shortcut);
+  });
 });
 
 dropdownBtn.addEventListener('click', (event) => {
@@ -806,7 +842,13 @@ async function init() {
   migrateLegacyShortcutIcons(workingShortcuts)
     .then(async ({ shortcuts: migrated, changed }) => {
       if (!changed) return;
-      const next = normalizeShortcutOrder(migrated);
+      // 图标下载可能在用户删除快捷访问后才结束，只更新仍存在的项目。
+      const latest = await loadShortcuts();
+      const next = normalizeShortcutOrder(latest.map((item) => {
+        const index = workingShortcuts.findIndex((old) => old.id === item.id && old.url === item.url);
+        if (index < 0 || item.iconUrl !== workingShortcuts[index].iconUrl) return item;
+        return { ...item, iconUrl: migrated[index].iconUrl };
+      }));
       await saveShortcuts(next);
       renderUI(next);
     })
