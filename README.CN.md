@@ -43,7 +43,7 @@ Chrome / Edge 浏览器侧边栏插件，提供快捷访问、网页嵌入浏览
 ### Chrome
 1. 打开 Chrome 浏览器，进入 `chrome://extensions/`
 2. 开启 **开发者模式**
-3. 点击 **加载已解压的扩展程序**，选择本插件所在目录
+3. 点击 **加载已解压的扩展程序**，选择仓库内的 `extension/` 目录（里面有 `manifest.json`）
 
 ### Edge 商店一键安装
 
@@ -60,37 +60,22 @@ Chrome / Edge 浏览器侧边栏插件，提供快捷访问、网页嵌入浏览
 
 ```
 便捷边栏/
-├── manifest.json          # 插件清单（Manifest V3）
-├── background.js          # Service Worker 后台脚本
-├── sidepanel.html         # 侧边栏入口页面
-├── sidepanel.js           # 侧边栏主逻辑（快捷访问、嵌入浏览）
-├── sidepanel.css          # 侧边栏样式
-├── options.html           # 设置页面
-├── options.js             # 设置页面逻辑
-├── options.css            # 设置页面样式
-├── viewer.html            # 独立页面查看器
-├── viewer.js              # 查看器逻辑
-├── frame-bypass.js        # iframe 嵌入 bypass（UA 模拟、Cookie 处理）
-├── embed-rules.js         # declarativeNetRequest 请求头规则
-├── icon-theme.js          # 工具栏图标主题管理
-├── icon-store.js          # 站点图标抓取与存储
-├── sidebar-home.js        # 主页快捷方式处理
-├── icons/                 # 图标资源
-│   ├── icon16.png
-│   ├── icon48.png
-│   ├── icon128.png
-│   ├── icon-dark16.png
-│   ├── icon-dark48.png
-│   ├── icon-dark128.png
-│   ├── plugin-icon.svg
-│   ├── plugin-icon-dark.svg
-│   ├── home.svg
-│   ├── plus.svg
-│   ├── drag.svg
-│   ├── down.svg
-│   └── ...
+├── extension/             # 加载已解压扩展时选择此目录
+│   ├── manifest.json      # 插件清单（Manifest V3）
+│   ├── sidepanel.html      # 侧边栏入口页面
+│   ├── options.html        # 设置页面
+│   ├── viewer.html         # 独立页面查看器
+│   ├── css/               # 页面样式
+│   │   ├── sidepanel.css
+│   │   └── options.css
+│   ├── js/                # 后台脚本、内容脚本和页面逻辑
+│   │   ├── background.js
+│   │   ├── floating-content.js
+│   │   ├── embed-rules.js
+│   │   └── ...
+│   └── icons/             # 图标资源
 └── scripts/
-    └── generate-icons.mjs # 图标生成脚本
+    └── generate-icons.mjs # 在 extension/icons/ 内生成图标
 ```
 
 ## 技术栈

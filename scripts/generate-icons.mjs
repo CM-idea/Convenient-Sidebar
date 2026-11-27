@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const iconsDir = join(__dirname, '..', 'icons');
+const iconsDir = join(__dirname, '..', 'extension', 'icons');
 
 async function renderSvgToPng(svgPath, pngPath, size) {
   const svg = readFileSync(svgPath);

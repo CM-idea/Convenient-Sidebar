@@ -27,7 +27,7 @@ async function tellFloatingTab(tab, type) {
   } catch (error) {
     if (type !== 'FLOATING_OPEN') throw error;
     // A newly opened tab can receive a click before its content script loads.
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['floating-content.js'] });
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['js/floating-content.js'] });
     return chrome.tabs.sendMessage(tab.id, { type });
   }
 }

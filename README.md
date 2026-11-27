@@ -1,4 +1,4 @@
-> [简体中文](https://github.com/CM-idea/Convenient-Sidebar/blob/main/README.CN.md)
+> [简体中文](README.CN.md)
 
 # Convenient Sidebar
 
@@ -37,7 +37,7 @@ A Chrome / Edge browser side panel extension that provides quick access shortcut
 ### Chrome
 1. Navigate to `chrome://extensions/`
 2. Enable **Developer mode**
-3. Click **Load unpacked** and select the extension directory
+3. Click **Load unpacked** and select the `extension/` directory (the folder containing `manifest.json`)
 
 ### Edge
 
@@ -54,37 +54,22 @@ Available on the Edge Add-ons Store: <a href="https://microsoftedge.microsoft.co
 
 ```
 convenient-sidebar/
-├── manifest.json          # Extension manifest (Manifest V3)
-├── background.js          # Service Worker background script
-├── sidepanel.html         # Side panel entry page
-├── sidepanel.js           # Side panel main logic (quick access, embedded browsing)
-├── sidepanel.css          # Side panel styles
-├── options.html           # Settings page
-├── options.js             # Settings page logic
-├── options.css            # Settings page styles
-├── viewer.html            # Standalone page viewer
-├── viewer.js              # Viewer logic
-├── frame-bypass.js        # iframe embedding bypass (UA spoofing, cookie handling)
-├── embed-rules.js         # declarativeNetRequest header modification rules
-├── icon-theme.js          # Toolbar icon theme management
-├── icon-store.js          # Site icon fetching and storage
-├── sidebar-home.js        # Home shortcut handling
-├── icons/                 # Icon assets
-│   ├── icon16.png
-│   ├── icon48.png
-│   ├── icon128.png
-│   ├── icon-dark16.png
-│   ├── icon-dark48.png
-│   ├── icon-dark128.png
-│   ├── plugin-icon.svg
-│   ├── plugin-icon-dark.svg
-│   ├── home.svg
-│   ├── plus.svg
-│   ├── drag.svg
-│   ├── down.svg
-│   └── ...
+├── extension/             # Load this folder as the unpacked extension
+│   ├── manifest.json      # Extension manifest (Manifest V3)
+│   ├── sidepanel.html      # Side panel entry page
+│   ├── options.html        # Settings page
+│   ├── viewer.html         # Standalone page viewer
+│   ├── css/               # Page styles
+│   │   ├── sidepanel.css
+│   │   └── options.css
+│   ├── js/                # Background, content, and page scripts
+│   │   ├── background.js
+│   │   ├── floating-content.js
+│   │   ├── embed-rules.js
+│   │   └── ...
+│   └── icons/             # Icon assets
 └── scripts/
-    └── generate-icons.mjs # Icon generation script
+    └── generate-icons.mjs # Generates icons in extension/icons/
 ```
 
 ## Tech Stack

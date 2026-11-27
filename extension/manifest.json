@@ -17,7 +17,7 @@
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "js/background.js"
   },
   "options_ui": {
     "page": "options.html",
@@ -33,7 +33,7 @@
         "https://*/*"
       ],
       "js": [
-        "floating-content.js"
+        "js/floating-content.js"
       ],
       "run_at": "document_idle"
     }
