@@ -4,10 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>便捷边栏</title>
-  <link rel="stylesheet" href="sidepanel.css" />
+  <link rel="stylesheet" href="css/sidepanel.css" />
 </head>
 <body>
   <div class="sidebar">
+    <div class="display-mode-bar" id="display-mode-bar">
+      <span>便捷边栏</span>
+      <button type="button" id="float-mode-button" title="覆盖网页显示，不挤压网页">悬浮显示 ↗</button>
+    </div>
     <header class="toolbar" role="toolbar" aria-label="快捷操作">
       <button class="toolbar-btn" type="button" data-slot="0" aria-label="快捷访问 1">
         <svg class="icon icon--plus" viewBox="0 0 24 24" aria-hidden="true" fill="none">
@@ -67,7 +71,19 @@
           <div class="shortcuts-grid" id="shortcuts-grid"></div>
         </div>
         <div class="search-area">
-          <input class="search-bar" id="search-input" type="search" placeholder="请输入搜索内容" aria-label="搜索" />
+          <div class="search-box">
+            <button class="search-engine-button" id="search-engine-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="切换搜索引擎">
+              <span class="search-engine-badge" id="search-engine-badge" aria-hidden="true">G</span>
+              <svg viewBox="0 0 12 12" aria-hidden="true" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <input class="search-bar" id="search-input" type="search" placeholder="请输入搜索内容" aria-label="搜索" />
+            <div class="search-engine-menu" id="search-engine-menu" hidden role="menu" aria-label="选择搜索引擎">
+              <button type="button" role="menuitemradio" data-engine="google"><span class="search-engine-badge search-engine-badge--google" aria-hidden="true">G</span>谷歌搜索</button>
+              <button type="button" role="menuitemradio" data-engine="bing"><span class="search-engine-badge search-engine-badge--bing" aria-hidden="true">b</span>必应搜索</button>
+              <button type="button" role="menuitemradio" data-engine="baidu"><span class="search-engine-badge search-engine-badge--baidu" aria-hidden="true">度</span>百度搜索</button>
+              <button type="button" role="menuitemradio" data-engine="custom"><span class="search-engine-badge search-engine-badge--custom" aria-hidden="true">⌕</span>自定义搜索</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="page-view" id="page-view" hidden>
@@ -138,10 +154,10 @@
     </div>
   </div>
 
-  <script src="icon-theme.js"></script>
-  <script src="icon-store.js"></script>
-  <script src="sidebar-home.js"></script>
-  <script src="embed-rules.js"></script>
-  <script src="sidepanel.js"></script>
+  <script src="js/icon-theme.js"></script>
+  <script src="js/icon-store.js"></script>
+  <script src="js/sidebar-home.js"></script>
+  <script src="js/embed-rules.js"></script>
+  <script src="js/sidepanel.js"></script>
 </body>
 </html>

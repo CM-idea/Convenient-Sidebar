@@ -38,11 +38,11 @@ body {
   background: var(--color-bg);
 }
 
-/* 顶部工具栏 — 8 个按钮均分填满整行 */
+/* 工具栏按实际宽度增减可见图标，最后一格用于更多菜单 */
 .toolbar {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(var(--toolbar-columns, 8), minmax(0, 1fr));
   flex-shrink: 0;
   width: 100%;
   height: var(--toolbar-height);
@@ -62,6 +62,30 @@ body {
   background: var(--color-bg);
   cursor: pointer;
   transition: background-color 0.15s ease;
+}
+
+.toolbar-btn[hidden] {
+  display: none;
+}
+
+.toolbar-btn--filled,
+.shortcut-item__link[draggable="true"] {
+  cursor: grab;
+}
+
+.toolbar-btn--filled:active,
+.shortcut-item__link[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.shortcut--dragging {
+  opacity: 0.45;
+}
+
+.shortcut--drag-over {
+  outline: 2px solid #2563eb;
+  outline-offset: -3px;
+  background: #eaf2ff;
 }
 
 .toolbar-btn:last-child {
@@ -245,13 +269,99 @@ body {
   padding: 0 19px 19px;
 }
 
-.search-bar {
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
   height: 42px;
-  padding: 0 16px;
+  border-radius: 22px;
+  background: #f6f7f7;
+}
+
+.search-box:focus-within {
+  box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.25);
+}
+
+.search-engine-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 0 0 52px;
+  height: 32px;
+  margin-left: 5px;
+  border: 0;
+  border-right: 1px solid #dcdcde;
+  background: transparent;
+  cursor: pointer;
+  color: #7b8795;
+}
+
+.search-engine-button svg { width: 10px; height: 10px; }
+.search-engine-button:focus-visible { outline: 2px solid #2563eb; border-radius: 14px; }
+
+.search-engine-badge {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.search-engine-badge--google { color: #4285f4; }
+.search-engine-badge--bing { color: #007da8; }
+.search-engine-badge--baidu { color: #315efb; }
+.search-engine-badge--custom { color: #667085; }
+
+.search-engine-menu {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: 164px;
+  padding: 5px;
+  border: 1px solid #e2e5e9;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+}
+
+.search-engine-menu[hidden] { display: none; }
+
+.search-engine-menu button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 34px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.search-engine-menu button:hover,
+.search-engine-menu button[aria-checked="true"] { background: #eaf2ff; }
+.search-engine-menu button:disabled { color: #a5acb6; cursor: not-allowed; }
+
+.search-bar {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 16px 0 8px;
   border: none;
   border-radius: 20px;
-  background: #f6f7f7;
+  background: transparent;
   font-size: 12px;
   color: #000000;
   outline: none;
@@ -262,7 +372,7 @@ body {
 }
 
 .search-bar:focus {
-  box-shadow: 0 0 0 2px rgba(56, 88, 233, 0.25);
+  box-shadow: none;
 }
 
 .page-loading {
@@ -367,6 +477,19 @@ body {
 }
 
 .shortcut-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 55px;
+  padding: 0;
+  border: none;
+  background: none;
+  user-select: none;
+}
+
+.shortcut-item__link {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -377,11 +500,70 @@ body {
   background: none;
   cursor: pointer;
   touch-action: manipulation;
-  user-select: none;
 }
 
-.shortcut-item:active {
+.shortcut-item__link:active,
+.shortcut-item--add:active,
+.shortcut-item--manage:active {
   transform: scale(0.94);
+}
+
+.shortcut-item--add,
+.shortcut-item--manage {
+  cursor: pointer;
+}
+
+.shortcut-item__link:focus-visible,
+.shortcut-item--add:focus-visible,
+.shortcut-item--manage:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.shortcut-item__remove {
+  position: absolute;
+  z-index: 2;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #d6e4f8;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(28, 54, 92, 0.12);
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.shortcut-item__remove[hidden] {
+  display: none;
+}
+
+.shortcut-item__remove svg {
+  width: 15px;
+  height: 15px;
+}
+
+.shortcut-item:hover .shortcut-item__remove,
+.shortcut-item:focus-within .shortcut-item__remove {
+  opacity: 1;
+}
+
+.shortcut-item__remove:hover,
+.shortcut-item__remove:focus-visible {
+  background: #eaf2ff;
+  color: #1d4ed8;
+  outline: none;
+}
+
+.shortcut-item__remove:focus-visible {
+  box-shadow: 0 0 0 2px #2563eb;
 }
 
 .shortcut-item__icon {
@@ -423,6 +605,25 @@ body {
   justify-content: center;
   padding: 0;
   color: #888888;
+}
+
+.shortcut-item--manage .shortcut-item__icon--manage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #697584;
+}
+
+.shortcut-item--manage .shortcut-item__icon--manage svg {
+  width: 24px;
+  height: 24px;
+}
+
+.shortcut-item--manage:hover .shortcut-item__icon--manage,
+.shortcut-item--manage-active .shortcut-item__icon--manage {
+  background: #eaf2ff;
+  color: #1d4ed8;
 }
 
 .shortcut-item--add .shortcut-item__icon--add svg {
@@ -618,3 +819,28 @@ body {
   color: #3858e9;
   border: 1px solid #3858e9;
 }
+
+/* The native side panel keeps Edge's title bar; the floating wrapper owns its own bar. */
+.display-mode-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  min-height: 36px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-size: 12px;
+}
+.display-mode-bar button {
+  border: 0;
+  border-radius: 5px;
+  padding: 5px 8px;
+  color: #1466b8;
+  background: #eff6ff;
+  cursor: pointer;
+}
+.display-mode-bar button:hover { background: #dbeafe; }
+.display-mode-bar button:disabled { opacity: .55; cursor: wait; }
+body.floating-view .display-mode-bar { display: none; }

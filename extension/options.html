@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>便捷边栏 - 设置</title>
-  <link rel="stylesheet" href="options.css" />
+  <link rel="stylesheet" href="css/options.css" />
 </head>
 <body>
   <div class="options-page">
@@ -39,6 +39,12 @@
               <path d="M85 25.6666C86.4727 25.6666 87.6666 24.4727 87.6666 23C87.6666 21.5272 86.4727 20.3333 85 20.3333C83.5272 20.3333 82.3333 21.5272 82.3333 23C82.3333 24.4727 83.5272 25.6666 85 25.6666Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             书签设置
+          </button>
+          <button class="options-nav__item" type="button" data-tab="backup">
+            <svg class="options-nav__icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+              <path d="M4 6H20V20H4V6ZM8 3H16M8 11H16M12 8V15M9 12L12 15L15 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            数据备份
           </button>
         </div>
         <div class="options-nav__footer">
@@ -120,7 +126,7 @@
                   <input type="radio" name="icon-theme" value="light" checked />
                   <span class="options-icon-option__box options-icon-option__box--light">
                     <img class="options-icon-preview" src="icons/plugin-icon-dark.svg" width="12" height="12" alt="" />
-                    亮色图标
+                    蓝色图标
                   </span>
                 </div>
                 <div class="options-icon-option">
@@ -159,6 +165,18 @@
               <h3 class="options-section__label options-section__label--bookmark">快捷访问</h3>
               <div class="bookmark-list" id="bookmark-list" aria-live="polite"></div>
             </div>
+          </section>
+        </div>
+        <div class="options-panel" data-panel="backup" hidden>
+          <section class="options-section backup-section">
+            <h3>导入与导出</h3>
+            <p>备份包含快捷访问、站点图标和全部设置。导入会覆盖当前数据。</p>
+            <div class="backup-actions">
+              <button class="backup-button" id="backup-export" type="button">导出 JSON 备份</button>
+              <button class="backup-button backup-button--secondary" id="backup-import" type="button">导入 JSON 备份</button>
+              <input id="backup-file" type="file" accept=".json,application/json" hidden />
+            </div>
+            <p class="backup-status" id="backup-status" role="status" aria-live="polite"></p>
           </section>
         </div>
       </main>
@@ -208,9 +226,10 @@
     </div>
   </div>
 
-  <script src="icon-theme.js"></script>
-  <script src="icon-store.js"></script>
-  <script src="sidebar-home.js"></script>
-  <script src="options.js"></script>
+  <script src="js/icon-theme.js"></script>
+  <script src="js/icon-store.js"></script>
+  <script src="js/sidebar-home.js"></script>
+  <script src="js/backup.js"></script>
+  <script src="js/options.js"></script>
 </body>
 </html>

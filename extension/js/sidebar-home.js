@@ -67,12 +67,18 @@ const SidebarHome = {
 
   ensureDefaultShortcuts(shortcuts) {
     const list = Array.isArray(shortcuts) ? shortcuts : [];
-    if (list.length > 0) {
-      return { shortcuts: list, changed: false };
-    }
+    let hasHome = false;
+    const unique = list.filter((item) => {
+      if (!this.isHomeUrl(item?.url)) return true;
+      if (hasHome) return false;
+      hasHome = true;
+      return true;
+    });
+    if (hasHome) return { shortcuts: unique, changed: unique.length !== list.length };
 
+    const firstOrder = Math.min(0, ...list.map((item) => Number.isFinite(item.order) ? item.order : 0));
     return {
-      shortcuts: [this.createDefaultShortcut()],
+      shortcuts: [{ ...this.createDefaultShortcut(), order: firstOrder - 1 }, ...unique],
       changed: true,
     };
   },

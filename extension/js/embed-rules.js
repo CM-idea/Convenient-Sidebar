@@ -120,7 +120,7 @@ async function registerEmbedContentScripts() {
   const scripts = [
     {
       id: 'sidebar-frame-main',
-      js: ['frame-bypass.js'],
+      js: ['js/frame-bypass.js'],
       matches: ['<all_urls>'],
       runAt: 'document_start',
       allFrames: true,

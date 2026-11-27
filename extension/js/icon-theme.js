@@ -33,8 +33,9 @@ function resolveIconSettings(themeOrSettings, customIconUrl) {
   };
 }
 
-async function createImageDataFromDataUrl(dataUrl, size) {
-  const response = await fetch(dataUrl);
+async function createImageDataFromUrl(url, size) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to load toolbar icon: ${url} (${response.status})`);
   const blob = await response.blob();
   const bitmap = await createImageBitmap(blob, {
     resizeWidth: size,
@@ -63,7 +64,17 @@ async function buildToolbarImageDataFromDataUrl(dataUrl) {
   const imageData = {};
 
   for (const size of ICON_SIZES) {
-    imageData[size] = await createImageDataFromDataUrl(dataUrl, size);
+    imageData[size] = await createImageDataFromUrl(dataUrl, size);
+  }
+
+  return imageData;
+}
+
+async function buildToolbarImageDataFromPaths(paths) {
+  const imageData = {};
+
+  for (const size of ICON_SIZES) {
+    imageData[size] = await createImageDataFromUrl(chrome.runtime.getURL(paths[size]), size);
   }
 
   return imageData;
@@ -80,11 +91,11 @@ async function applyToolbarIcon(themeOrSettings, customIconUrl) {
       return;
     }
 
-    await chrome.action.setIcon({ path: ICON_PATHS.light });
+    await chrome.action.setIcon({ imageData: await buildToolbarImageDataFromPaths(ICON_PATHS.light) });
     return;
   }
 
-  await chrome.action.setIcon({ path: ICON_PATHS[iconTheme] });
+  await chrome.action.setIcon({ imageData: await buildToolbarImageDataFromPaths(ICON_PATHS[iconTheme]) });
 }
 
 if (typeof globalThis !== 'undefined') {
