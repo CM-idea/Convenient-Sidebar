@@ -7,6 +7,10 @@ if (!globalThis.__convenientSidebarFloating) {
   let width = 420;
   let selectedId = null;
   let shortcuts = [];
+  let originalPageStyle = null;
+  let pageObserver = null;
+  let scanTimer = 0;
+  const shiftedFixed = new Map();
   const maxWidth = () => Math.max(160, innerWidth - RAIL - 12);
   const clamp = (value) => Math.min(Math.max(value, Math.min(280, maxWidth())), maxWidth());
   const isHome = (item) => item?.url === HOME_URL || item?.url === 'home';
@@ -35,6 +39,86 @@ if (!globalThis.__convenientSidebarFloating) {
     host?.remove();
     host = rail = panel = frame = null;
     selectedId = null;
+    restorePageSpace();
+  }
+
+  function restoreInline(el, property, old) {
+    if (old.value) el.style.setProperty(property, old.value, old.priority);
+    else el.style.removeProperty(property);
+  }
+  function restorePageSpace() {
+    pageObserver?.disconnect();
+    pageObserver = null;
+    clearTimeout(scanTimer);
+    scanTimer = 0;
+    for (const [el, old] of shiftedFixed) {
+      if (el.style.getPropertyValue('right') === old.applied) restoreInline(el, 'right', old);
+    }
+    shiftedFixed.clear();
+    if (!originalPageStyle) return;
+    const root = document.documentElement;
+    if (root.style.getPropertyValue('width') === originalPageStyle.appliedWidth) {
+      restoreInline(root, 'width', originalPageStyle.width);
+    }
+    if (root.style.getPropertyValue('margin-right') === originalPageStyle.appliedMargin) {
+      restoreInline(root, 'margin-right', originalPageStyle.margin);
+    }
+    originalPageStyle = null;
+  }
+  function scanFixedAtEdge() {
+    if (!host?.isConnected || !document.elementsFromPoint) return;
+    const seen = new Set();
+    for (let y = 16; y < innerHeight; y += 32) {
+      for (const x of [innerWidth - RAIL + 5, innerWidth - RAIL / 2]) {
+        for (const hit of document.elementsFromPoint(x, y)) {
+          let el = hit;
+          while (el && el !== document.body && el !== document.documentElement && el !== host) {
+            if (!seen.has(el)) {
+              seen.add(el);
+              const style = getComputedStyle(el);
+              const box = el.getBoundingClientRect();
+              if (!shiftedFixed.has(el) && style.position === 'fixed' && style.right !== 'auto' &&
+                  box.right > innerWidth - RAIL + 1 && box.right <= innerWidth + 2) {
+                const applied = `calc(${style.right} + ${RAIL}px)`;
+                shiftedFixed.set(el, {
+                  value: el.style.getPropertyValue('right'),
+                  priority: el.style.getPropertyPriority('right'),
+                  applied,
+                });
+                el.style.setProperty('right', applied, 'important');
+              }
+            }
+            el = el.parentElement;
+          }
+        }
+      }
+    }
+  }
+  function scheduleFixedScan() {
+    if (scanTimer || !host?.isConnected) return;
+    scanTimer = setTimeout(() => {
+      scanTimer = 0;
+      scanFixedAtEdge();
+    }, 120);
+  }
+  function reservePageSpace() {
+    if (originalPageStyle) return;
+    const root = document.documentElement;
+    const appliedWidth = `calc(100% - ${RAIL}px)`;
+    const appliedMargin = `${RAIL}px`;
+    originalPageStyle = {
+      width: { value: root.style.getPropertyValue('width'), priority: root.style.getPropertyPriority('width') },
+      margin: { value: root.style.getPropertyValue('margin-right'), priority: root.style.getPropertyPriority('margin-right') },
+      appliedWidth,
+      appliedMargin,
+    };
+    root.style.setProperty('width', appliedWidth, 'important');
+    root.style.setProperty('margin-right', appliedMargin, 'important');
+    pageObserver = new MutationObserver(scheduleFixedScan);
+    if (document.body) pageObserver.observe(document.body, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'],
+    });
+    scheduleFixedScan();
   }
   function showPanel(id) {
     if (!panel || (id !== '__add__' && id !== 'bm-default-home' &&
@@ -117,6 +201,7 @@ if (!globalThis.__convenientSidebarFloating) {
       .header{display:flex;align-items:center;gap:8px;height:48px;min-height:48px;padding:0 9px 0 16px;border-bottom:1px solid #e5e7eb}
       .title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:600}
       .dock{padding:6px;border-radius:6px;font-size:12px;white-space:nowrap}
+      .refresh{width:30px;height:30px;border-radius:6px;font-size:23px;line-height:1}
       .close{width:30px;height:30px;border-radius:6px;font-size:24px;line-height:1}
       .header button:hover{background:#eef3f8}
       .handle{position:absolute;z-index:2;left:-6px;top:0;bottom:0;width:11px;cursor:ew-resize;touch-action:none}
@@ -137,7 +222,10 @@ if (!globalThis.__convenientSidebarFloating) {
         if (chrome.runtime.lastError || !reply?.ok) console.warn('[便捷边栏] 停靠失败', chrome.runtime.lastError || reply?.error);
       });
     }, 'dock');
-    header.append(title, dock, button('×', '关闭悬浮窗口', hidePanel, 'close'));
+    const reload = button('↻', '刷新悬浮窗口', () => {
+      if (frame?.src) frame.src = frame.src;
+    }, 'refresh');
+    header.append(title, reload, dock, button('×', '关闭悬浮窗口', hidePanel, 'close'));
     const handle = document.createElement('div');
     handle.className = 'handle';
     handle.setAttribute('role', 'separator');
@@ -176,7 +264,9 @@ if (!globalThis.__convenientSidebarFloating) {
     rail.append(list, footer);
     shadow.append(panel, rail);
     (document.documentElement || document.body).appendChild(host);
-    await refreshShortcuts();
+    reservePageSpace();
+    try { await refreshShortcuts(); }
+    catch (error) { hideRail(); throw error; }
   }
 
   chrome.runtime.onMessage.addListener((message, _sender, respond) => {
@@ -207,5 +297,8 @@ if (!globalThis.__convenientSidebarFloating) {
   chrome.runtime.sendMessage({ type: 'FLOATING_STATE' }, (state) => {
     if (!chrome.runtime.lastError && state?.open) showRail().catch(() => {});
   });
-  addEventListener('resize', () => { if (host?.isConnected) resizeHost(); });
+  addEventListener('resize', () => {
+    if (host?.isConnected) { resizeHost(); scheduleFixedScan(); }
+  });
+  addEventListener('scroll', scheduleFixedScan, true);
 }
