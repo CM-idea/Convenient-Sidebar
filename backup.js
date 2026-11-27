@@ -12,7 +12,7 @@ const SidebarBackup = {
       shortcuts: protectedShortcuts,
       display: {
         mode: display.mode === 'floating' ? 'floating' : 'docked',
-        width: Number.isFinite(display.width) ? Math.max(280, Math.min(850, display.width)) : 420,
+        width: Number.isFinite(display.width) ? Math.max(160, Math.min(4096, display.width)) : 420,
       },
     };
   },
@@ -75,7 +75,7 @@ const SidebarBackup = {
       ? {
           mode: data.display.mode === 'floating' ? 'floating' : 'docked',
           width: Number.isFinite(data.display.width)
-            ? Math.max(280, Math.min(850, data.display.width)) : 420,
+            ? Math.max(160, Math.min(4096, data.display.width)) : 420,
         }
       : null; // Previous backups keep the current display preference.
     return { settings, shortcuts: SidebarHome.ensureDefaultShortcuts(shortcuts).shortcuts, display };

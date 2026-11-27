@@ -13,7 +13,7 @@ async function getDisplayMode() {
 async function setDisplayMode(mode) {
   await chrome.storage.local.set({ [DISPLAY_MODE_KEY]: mode });
   await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: mode === 'docked' });
-  await chrome.action.setTitle({ title: mode === 'floating' ? '打开或关闭悬浮边栏' : '打开侧边栏' });
+  await chrome.action.setTitle({ title: mode === 'floating' ? '显示或隐藏右侧图标栏' : '打开侧边栏' });
 }
 
 function canFloatOn(tab) {
@@ -34,8 +34,7 @@ async function tellFloatingTab(tab, type) {
 
 async function updateFloatingWindow(windowId, isOpen) {
   const windows = await getFloatingWindows();
-  if (isOpen) windows[windowId] = true;
-  else delete windows[windowId];
+  windows[windowId] = Boolean(isOpen);
   await chrome.storage.session.set({ [FLOATING_WINDOWS_KEY]: windows });
   if (!isOpen) {
     const tabs = await chrome.tabs.query({ windowId });
@@ -79,15 +78,16 @@ async function switchFromSidePanel(sendResponse) {
 function initFloatingPanelBehavior() {
   getDisplayMode().then(async (mode) => {
     await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: mode === 'docked' });
-    await chrome.action.setTitle({ title: mode === 'floating' ? '打开或关闭悬浮边栏' : '打开侧边栏' });
+    await chrome.action.setTitle({ title: mode === 'floating' ? '显示或隐藏右侧图标栏' : '打开侧边栏' });
   }).catch(console.warn);
 }
 
 chrome.action.onClicked.addListener(async (tab) => {
   if (await getDisplayMode() !== 'floating') return;
   try {
+    if (!canFloatOn(tab)) throw new Error('此页面不支持网页图标栏，请打开普通网页重试');
     const windows = await getFloatingWindows();
-    if (windows[tab.windowId]) {
+    if (windows[tab.windowId] !== false) {
       await updateFloatingWindow(tab.windowId, false);
       return;
     }
@@ -100,7 +100,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
   try {
     if (await getDisplayMode() !== 'floating') return;
-    if (!(await getFloatingWindows())[windowId]) return;
+    if ((await getFloatingWindows())[windowId] === false) return;
     const tab = await chrome.tabs.get(tabId);
     if (canFloatOn(tab)) await tellFloatingTab(tab, 'FLOATING_OPEN');
   } catch { /* restricted or loading tab; its content script retries at document_idle */ }
@@ -108,14 +108,17 @@ chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
 
 chrome.windows.onRemoved.addListener(async (windowId) => {
   const windows = await getFloatingWindows();
-  if (windows[windowId]) await updateFloatingWindow(windowId, false);
+  if (Object.hasOwn(windows, windowId)) {
+    delete windows[windowId];
+    await chrome.storage.session.set({ [FLOATING_WINDOWS_KEY]: windows });
+  }
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local' || !changes[DISPLAY_MODE_KEY]) return;
   const floating = changes[DISPLAY_MODE_KEY].newValue === 'floating';
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: !floating }).catch(console.warn);
-  chrome.action.setTitle({ title: floating ? '打开或关闭悬浮边栏' : '打开侧边栏' });
+  chrome.action.setTitle({ title: floating ? '显示或隐藏右侧图标栏' : '打开侧边栏' });
   if (!floating) {
     (async () => {
       for (const id of Object.keys(await getFloatingWindows())) {
@@ -128,7 +131,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'FLOATING_STATE') {
     Promise.all([getDisplayMode(), getFloatingWindows()]).then(([mode, windows]) => {
-      sendResponse({ open: mode === 'floating' && Boolean(windows[sender.tab?.windowId]) });
+      sendResponse({ open: mode === 'floating' && windows[sender.tab?.windowId] !== false });
     }).catch(() => sendResponse({ open: false }));
     return true;
   }

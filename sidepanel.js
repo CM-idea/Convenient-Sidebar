@@ -1025,7 +1025,25 @@ async function init() {
   });
   applyToolbarIcon(currentSettings).catch(() => {});
 
-  await applyStartupView(currentSettings);
+  const railShortcut = floatingView ? new URLSearchParams(location.search).get('rail') : null;
+  if (railShortcut === '__add__') {
+    showQuickAccessHome();
+    await openModal(null, await getCurrentTab());
+  } else if (railShortcut) {
+    const selected = normalized.find((item) => item.id === railShortcut);
+    if (!selected || SidebarHome.isHomeUrl(selected.url)) {
+      showQuickAccessHome();
+    } else {
+      try {
+        await loadUrlInSidebarFrame(selected.url, Boolean(selected.requestMobile));
+      } catch (error) {
+        console.warn('[便捷边栏] 悬浮窗口无法加载快捷访问:', error);
+        showQuickAccessHome();
+      }
+    }
+  } else {
+    await applyStartupView(currentSettings);
+  }
 }
 
 searchInput.addEventListener('keydown', (event) => {
